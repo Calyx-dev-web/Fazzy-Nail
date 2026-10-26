@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Phone, Calendar, Menu, X, Shield, Sparkles, MessageSquare } from 'lucide-react';
 import { BUSINESS_INFO, getWhatsAppUrl } from '../types';
+import { IMAGES } from '../assets/images';
 
 interface NavbarProps {
   onOpenBooking: () => void;
@@ -80,7 +81,7 @@ export const Navbar: React.FC<NavbarProps> = ({
           className="text-left group flex items-center gap-2.5 sm:gap-3 shrink-0 cursor-pointer"
         >
           <img
-            src="/assets/aistudio/image_d0ec8d5e.png"
+            src={IMAGES.logo}
             alt="Fazzynails Logo"
             className="w-10 h-10 sm:w-12 sm:h-12 rounded-full object-cover border-2 border-amber-300 shadow-xs group-hover:scale-105 transition-transform shrink-0"
           />

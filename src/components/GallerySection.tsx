@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { GalleryItem, getWhatsAppUrl } from '../types';
 import { Sparkles, X, MessageSquare, Calendar, ZoomIn } from 'lucide-react';
+import { resolveImageUrl } from '../assets/images';
 
 interface GallerySectionProps {
   galleryItems: GalleryItem[];
@@ -68,7 +69,7 @@ export const GallerySection: React.FC<GallerySectionProps> = ({ galleryItems, on
                 onClick={() => setActiveItem(item)}
               >
                 <img
-                  src={item.imageUrl}
+                  src={resolveImageUrl(item.imageUrl)}
                   alt={item.title}
                   referrerPolicy="no-referrer"
                   className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-108"
@@ -147,7 +148,7 @@ export const GallerySection: React.FC<GallerySectionProps> = ({ galleryItems, on
             <div className="grid grid-cols-1 md:grid-cols-2">
               <div className="relative aspect-square bg-stone-950 flex items-center justify-center">
                 <img
-                  src={activeItem.imageUrl}
+                  src={resolveImageUrl(activeItem.imageUrl)}
                   alt={activeItem.title}
                   referrerPolicy="no-referrer"
                   className="w-full h-full object-cover"

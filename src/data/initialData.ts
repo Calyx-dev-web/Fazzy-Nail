@@ -1,4 +1,5 @@
 import { NailService, GalleryItem, Review, BlogPost } from '../types';
+import { IMAGES } from '../assets/images';
 
 export const INITIAL_SERVICES: NailService[] = [
   {
@@ -88,7 +89,7 @@ export const INITIAL_GALLERY: GalleryItem[] = [
     id: 'gal-1',
     title: 'Signature Almond Ombre Acrylic Set',
     category: 'acrylic',
-    imageUrl: '/src/assets/images/fazzynails_acrylic_set_1792990688666.jpg',
+    imageUrl: IMAGES.acrylic,
     description: 'Sculpted almond shape with micro-rhinestone cuticle crowns and baby boomer gradient.',
     featured: true,
     createdAt: '2026-03-15',
@@ -97,7 +98,7 @@ export const INITIAL_GALLERY: GalleryItem[] = [
     id: 'gal-2',
     title: 'High-Gloss Nude Pink Gel Polish',
     category: 'gel',
-    imageUrl: '/src/assets/images/fazzynails_gel_polish_1792990687753.jpg',
+    imageUrl: IMAGES.gel,
     description: 'Immaculate Russian manicure cuticle preparation with 3-week lasting reflective gel gloss.',
     featured: true,
     createdAt: '2026-03-18',
@@ -106,7 +107,7 @@ export const INITIAL_GALLERY: GalleryItem[] = [
     id: 'gal-3',
     title: 'Classy Minimalist Luxury Editorial Look',
     category: 'minimal',
-    imageUrl: '/src/assets/images/fazzynails_hero_1792990686791.jpg',
+    imageUrl: IMAGES.hero,
     description: 'Soft warm aesthetic nude nails paired with dainty gold band aesthetics for effortless class.',
     featured: true,
     createdAt: '2026-03-20',
@@ -115,7 +116,7 @@ export const INITIAL_GALLERY: GalleryItem[] = [
     id: 'gal-4',
     title: 'Fazzynails Atelier & Sanitization Lounge',
     category: 'bridal',
-    imageUrl: '/src/assets/images/fazzynails_studio_1792990689173.jpg',
+    imageUrl: IMAGES.studio,
     description: 'Our serene, sterile, and comforting private nail studio designed for ultimate pampering.',
     featured: false,
     createdAt: '2026-03-22',
@@ -170,7 +171,7 @@ export const INITIAL_BLOG_POSTS: BlogPost[] = [
     date: 'March 2026',
     category: 'Nail Care & Tips',
     excerpt: 'Simple daily habits to protect your sculpted acrylic set, prevent moisture traps, and preserve diamond shine.',
-    imageUrl: '/src/assets/images/fazzynails_acrylic_set_1792990688666.jpg',
+    imageUrl: IMAGES.acrylic,
     content: [
       'Acrylic extensions are a true investment in your style and confidence. With proper aftercare, a quality set from Fazzynails can easily stay pristine for 4 to 5 weeks without painful lifting or breakage.',
       '1. Wear gloves during heavy housework: Detergents, bleach, and harsh dishwashing chemicals break down acrylic polymer bonds and dry out your natural nail bed.',
@@ -187,7 +188,7 @@ export const INITIAL_BLOG_POSTS: BlogPost[] = [
     date: 'March 2026',
     category: 'Style Guide',
     excerpt: 'Not sure which service to book? Here is our honest breakdown based on nail length, strength, and work routine.',
-    imageUrl: '/src/assets/images/fazzynails_gel_polish_1792990687753.jpg',
+    imageUrl: IMAGES.gel,
     content: [
       'Choosing between gel, acrylic, and BIAB depends on your nail goals, everyday hand usage, and preferred aesthetic.',
       '• Gel Polish (₦3,000): Perfect for natural nails. Dries instantly under UV/LED light, gives mirror shine for 2–3 weeks, and adds zero bulky weight. Best for low-maintenance elegance.',
@@ -203,7 +204,7 @@ export const INITIAL_BLOG_POSTS: BlogPost[] = [
     date: 'February 2026',
     category: 'Hygiene & Health',
     excerpt: 'Why medical-grade sterilization and gentle cuticle grooming protect your natural nail bed from infection.',
-    imageUrl: '/src/assets/images/fazzynails_studio_1792990689173.jpg',
+    imageUrl: IMAGES.studio,
     content: [
       'At Fazzynails, hygiene is non-negotiable. Every metal implement undergoes a hospital-grade 3-step disinfection protocol and is sealed before each client.',
       'Your eponychium (cuticle barrier) protects your nail matrix where new cells form. We never aggressively cut living tissue; instead, we gently exfoliate dry pterygium, leaving your skin soft, protected, and radiant.',

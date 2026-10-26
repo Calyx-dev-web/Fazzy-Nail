@@ -34,11 +34,14 @@ jobs:
       - name: Install Dependencies
         run: npm ci || npm install
 
+      - name: Setup Pages
+        id: pages
+        uses: actions/configure-pages@v4
+
       - name: Build Production Assets
         run: npm run build
-
-      - name: Setup Pages
-        uses: actions/configure-pages@v4
+        env:
+          VITE_BASE_PATH: ${{ steps.pages.outputs.base_path }}
 
       - name: Upload Pages Artifact
         uses: actions/upload-pages-artifact@v3

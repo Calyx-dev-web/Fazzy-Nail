@@ -1,5 +1,6 @@
 import React from 'react';
 import { BUSINESS_INFO, getWhatsAppUrl } from '../types';
+import { IMAGES } from '../assets/images';
 import { Sparkles, Phone, MessageSquare, MapPin, Clock, Shield, ArrowUp, ExternalLink } from 'lucide-react';
 
 interface FooterProps {
@@ -21,7 +22,7 @@ export const Footer: React.FC<FooterProps> = ({ onOpenBooking, onOpenAdmin, onNa
           <div className="lg:col-span-4 space-y-4">
             <div className="flex items-center gap-3">
               <img
-                src="/assets/aistudio/image_d0ec8d5e.png"
+                src={IMAGES.logo}
                 alt="Fazzynails Logo"
                 className="w-12 h-12 rounded-full object-cover border-2 border-amber-300 shadow-md shrink-0"
               />

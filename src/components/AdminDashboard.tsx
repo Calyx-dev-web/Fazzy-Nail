@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Booking, Inquiry, NailService, GalleryItem, BUSINESS_INFO, getWhatsAppUrl } from '../types';
 import { formatPrice, formatDate, formatTime } from '../utils/format';
+import { IMAGES, resolveImageUrl } from '../assets/images';
 import {
   saveService,
   deleteService,
@@ -279,7 +280,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
         <div className="px-6 py-4 bg-stone-900 text-white flex items-center justify-between border-b border-stone-800">
           <div className="flex items-center gap-3">
             <img
-              src="/assets/aistudio/image_d0ec8d5e.png"
+              src={IMAGES.logo}
               alt="Fazzynails Logo"
               className="w-9 h-9 rounded-full object-cover border border-amber-300 shadow-xs shrink-0"
             />
@@ -1141,7 +1142,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                       {newGalUrl && (
                         <div className="mt-2 w-20 h-20 rounded-lg overflow-hidden border border-stone-300">
                           <img
-                            src={newGalUrl}
+                            src={resolveImageUrl(newGalUrl)}
                             alt="Preview"
                             className="w-full h-full object-cover"
                           />
@@ -1283,7 +1284,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                       <div>
                         <div className="aspect-square rounded-xl overflow-hidden bg-stone-100 mb-2 relative">
                           <img
-                            src={item.imageUrl}
+                            src={resolveImageUrl(item.imageUrl)}
                             alt={item.title}
                             className="w-full h-full object-cover"
                           />

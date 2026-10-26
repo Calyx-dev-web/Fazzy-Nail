@@ -1,6 +1,7 @@
 import React from 'react';
 import { Calendar, Phone, Sparkles, Star, Clock, CheckCircle2, MessageSquare } from 'lucide-react';
 import { BUSINESS_INFO, getWhatsAppUrl } from '../types';
+import { IMAGES } from '../assets/images';
 
 interface HeroSectionProps {
   onOpenBooking: () => void;
@@ -126,7 +127,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({ onOpenBooking, onSelec
               {/* Outer decorative ring */}
               <div className="relative rounded-3xl overflow-hidden border border-stone-200/90 shadow-2xl bg-white aspect-[4/3] lg:aspect-[5/6]">
                 <img
-                  src="/src/assets/images/fazzynails_hero_1792990686791.jpg"
+                  src={IMAGES.hero}
                   alt="Fazzynails luxury manicure and acrylic nail artistry"
                   referrerPolicy="no-referrer"
                   className="w-full h-full object-cover transition-transform duration-700 hover:scale-105"

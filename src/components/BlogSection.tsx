@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { BlogPost, getWhatsAppUrl } from '../types';
 import { INITIAL_BLOG_POSTS } from '../data/initialData';
 import { Clock, ArrowRight, X, Sparkles, MessageSquare } from 'lucide-react';
+import { resolveImageUrl } from '../assets/images';
 
 export const BlogSection: React.FC = () => {
   const [selectedPost, setSelectedPost] = useState<BlogPost | null>(null);
@@ -34,7 +35,7 @@ export const BlogSection: React.FC = () => {
                   onClick={() => setSelectedPost(post)}
                 >
                   <img
-                    src={post.imageUrl}
+                    src={resolveImageUrl(post.imageUrl)}
                     alt={post.title}
                     referrerPolicy="no-referrer"
                     className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
@@ -108,7 +109,7 @@ export const BlogSection: React.FC = () => {
 
               <div className="aspect-[16/9] rounded-2xl overflow-hidden">
                 <img
-                  src={selectedPost.imageUrl}
+                  src={resolveImageUrl(selectedPost.imageUrl)}
                   alt={selectedPost.title}
                   referrerPolicy="no-referrer"
                   className="w-full h-full object-cover"

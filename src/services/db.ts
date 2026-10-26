@@ -1,5 +1,6 @@
 import { Booking, Inquiry, NailService, GalleryItem, Review } from '../types';
 import { INITIAL_SERVICES, INITIAL_GALLERY, INITIAL_REVIEWS } from '../data/initialData';
+import { resolveImageUrl } from '../assets/images';
 
 const DB_NAME = 'fazzynails_db';
 const DB_VERSION = 1;
@@ -305,6 +306,11 @@ export async function getGallery(): Promise<GalleryItem[]> {
           // Preseed initial gallery
           await seedGallery(INITIAL_GALLERY);
           items = INITIAL_GALLERY;
+        } else {
+          items = items.map((item) => ({
+            ...item,
+            imageUrl: resolveImageUrl(item.imageUrl),
+          }));
         }
         resolve(items);
       };
@@ -312,7 +318,10 @@ export async function getGallery(): Promise<GalleryItem[]> {
     });
   } catch {
     const stored = getLocalStorageFallback<GalleryItem>('fzn_gallery');
-    return stored.length > 0 ? stored : INITIAL_GALLERY;
+    return (stored.length > 0 ? stored : INITIAL_GALLERY).map((item) => ({
+      ...item,
+      imageUrl: resolveImageUrl(item.imageUrl),
+    }));
   }
 }
 
