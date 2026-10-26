@@ -1,0 +1,6 @@
+{
+  "name": "Fazzynails",
+  "description": "Fazzynails - Nails that speak class. Premium nail technician studio offering gel polish, acrylic sculpting, custom nail art, and online bookings.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
