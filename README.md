@@ -82,20 +82,43 @@ git push -u origin main
 
 ---
 
-## 🌐 Free 1-Click Hosting on GitHub Pages
+## 🌐 Free Hosting on GitHub Pages (Fixing Blank White Page)
 
-This repository includes a pre-configured automated GitHub Actions workflow (`.github/workflows/deploy.yml`).
+If you saw a blank white page on GitHub Pages, it is caused by GitHub attempting to serve the raw uncompiled TypeScript/React source files (`src/main.tsx`) instead of running the Vite production build. 
 
-To enable free live hosting on GitHub Pages:
+You can fix this easily using **Method 1 (Recommended - GitHub Actions)** or **Method 2 (Terminal Command - `npm run deploy`)**:
+
+### Method 1: Automated Deployment via GitHub Actions (Recommended)
 
 1. Open your repository on GitHub.
-2. Click **Settings** (tab at the top).
-3. In the left sidebar, click **Pages** (under *Code and automation*).
-4. Under **Build and deployment** -> **Source**, select **GitHub Actions**.
-5. That's it! Every time you push to the `main` branch, GitHub will automatically build and publish your site at:
+2. Click **Settings** (tab at the top of your repository).
+3. In the left navigation menu, click **Pages** (under *Code and automation*).
+4. Under **Build and deployment** -> **Source**:
+   - Change the dropdown from **"Deploy from a branch"** to **"GitHub Actions"**.
+5. Go to the **Actions** tab at the top of your repository:
+   - Click **Deploy to GitHub Pages** in the left sidebar.
+   - Click **Run workflow** -> **Run workflow** (or simply make a git push).
+6. Wait 1-2 minutes for the green checkmark (✓). Your live site will be ready at:
    ```
    https://<YOUR-USERNAME>.github.io/<YOUR-REPO-NAME>/
    ```
+
+---
+
+### Method 2: 1-Command Deployment via Terminal (`npm run deploy`)
+
+If you prefer to deploy directly from your computer without GitHub Actions:
+
+```bash
+# This builds the production bundle and pushes it to a 'gh-pages' branch automatically
+npm run deploy
+```
+
+Then in GitHub:
+1. Go to **Settings** > **Pages**.
+2. Under **Source**, select **"Deploy from a branch"**.
+3. Select branch: **`gh-pages`** and folder: **`/ (root)`**.
+4. Click **Save**.
 
 ---
 

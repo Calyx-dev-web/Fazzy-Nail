@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { X, Shield, Lock, KeyRound, Smartphone, MessageSquare, CheckCircle2, AlertTriangle, Eye, EyeOff, RefreshCw } from 'lucide-react';
 import { BUSINESS_INFO, getWhatsAppUrl } from '../types';
+import { IMAGES } from '../assets/images';
 
 interface AdminAuthModalProps {
   isOpen: boolean;
@@ -177,7 +178,7 @@ export const AdminAuthModal: React.FC<AdminAuthModalProps> = ({
         <div className="text-center space-y-2 mb-6">
           <div className="relative w-16 h-16 mx-auto rounded-full p-1 bg-stone-900 border-2 border-amber-300 shadow-md flex items-center justify-center overflow-hidden">
             <img
-              src="/assets/aistudio/image_d0ec8d5e.png"
+              src={IMAGES.logo}
               alt="Fazzynails Official Logo"
               className="w-full h-full rounded-full object-cover"
             />
