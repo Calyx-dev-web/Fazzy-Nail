@@ -77,12 +77,20 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
   const [newServiceDesc, setNewServiceDesc] = useState('');
 
   // Editing / adding state for Gallery
+  const [editingGalleryItem, setEditingGalleryItem] = useState<GalleryItem | null>(null);
   const [isAddingGallery, setIsAddingGallery] = useState<boolean>(false);
   const [newGalTitle, setNewGalTitle] = useState('');
   const [newGalCategory, setNewGalCategory] = useState<'acrylic' | 'gel' | 'nailart' | 'minimal' | 'bridal'>('acrylic');
   const [newGalUrl, setNewGalUrl] = useState('');
   const [newGalDesc, setNewGalDesc] = useState('');
   const [newGalFeatured, setNewGalFeatured] = useState(false);
+
+  // Toast feedback state
+  const [toastNotice, setToastNotice] = useState<string | null>(null);
+  const showToastNotice = (msg: string) => {
+    setToastNotice(msg);
+    setTimeout(() => setToastNotice(null), 3500);
+  };
 
   if (!isOpen) return null;
 
@@ -124,8 +132,19 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
 
   // Save Service Edit
   const handleSaveService = async (service: NailService) => {
-    await saveService(service);
+    if (!service.name.trim()) {
+      alert('Please enter a valid service name.');
+      return;
+    }
+    await saveService({
+      ...service,
+      name: service.name.trim(),
+      price: Math.max(0, Number(service.price) || 0),
+      duration: service.duration.trim() || '45 mins',
+      description: service.description.trim(),
+    });
     setEditingService(null);
+    showToastNotice(`Service "${service.name}" updated successfully! Changes saved to database.`);
     onRefreshData();
   };
 
@@ -148,6 +167,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
     setIsAddingService(false);
     setNewServiceName('');
     setNewServiceDesc('');
+    showToastNotice(`New service "${srv.name}" created and saved to database!`);
     onRefreshData();
   };
 
@@ -194,12 +214,29 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
     setNewGalTitle('');
     setNewGalUrl('');
     setNewGalDesc('');
+    showToastNotice(`Gallery photo "${item.title}" added successfully!`);
+    onRefreshData();
+  };
+
+  const handleSaveGallery = async (item: GalleryItem) => {
+    if (!item.title.trim()) {
+      alert('Please enter a photo title.');
+      return;
+    }
+    await saveGalleryItem({
+      ...item,
+      title: item.title.trim(),
+      description: item.description.trim(),
+    });
+    setEditingGalleryItem(null);
+    showToastNotice(`Gallery photo "${item.title}" updated successfully!`);
     onRefreshData();
   };
 
   const handleDeleteGallery = async (id: string) => {
     if (confirm('Remove this photo from the gallery?')) {
       await deleteGalleryItem(id);
+      showToastNotice('Photo removed from gallery.');
       onRefreshData();
     }
   };
@@ -227,6 +264,14 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6 bg-stone-950/75 backdrop-blur-xs overflow-y-auto">
       <div className="relative w-full max-w-6xl bg-white rounded-3xl shadow-2xl border border-stone-200 overflow-hidden flex flex-col max-h-[92vh]">
+        {/* Real-time Toast Feedback Notification */}
+        {toastNotice && (
+          <div className="absolute top-3.5 right-16 z-50 flex items-center gap-2 px-3.5 py-1.5 bg-stone-950 text-white text-xs font-semibold rounded-xl shadow-xl border border-stone-700">
+            <Check className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
+            <span>{toastNotice}</span>
+          </div>
+        )}
+
         {/* Top Header */}
         <div className="px-6 py-4 bg-stone-900 text-white flex items-center justify-between border-b border-stone-800">
           <div className="flex items-center gap-3">
@@ -771,23 +816,51 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                     return (
                       <div
                         key={srv.id}
-                        className="p-5 bg-white rounded-2xl border-2 border-rose-500 shadow-md space-y-3"
+                        className="p-5 bg-white rounded-2xl border-2 border-stone-900 shadow-md space-y-4"
                       >
-                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
+                        <div className="flex items-center justify-between border-b border-stone-200 pb-2">
+                          <h4 className="font-bold text-sm text-stone-900 flex items-center gap-1.5">
+                            <Edit2 className="w-4 h-4 text-rose-700" />
+                            <span>Edit Service: {editingService.name}</span>
+                          </h4>
+                          <span className="text-[10px] font-mono text-stone-400">ID: {editingService.id}</span>
+                        </div>
+
+                        <div className="grid grid-cols-1 sm:grid-cols-4 gap-3 text-xs">
                           <div>
-                            <label className="block font-semibold mb-1">Service Title</label>
+                            <label className="block font-semibold mb-1">Service Title *</label>
                             <input
                               type="text"
                               value={editingService.name}
                               onChange={(e) =>
                                 setEditingService({ ...editingService, name: e.target.value })
                               }
-                              className="w-full px-3 py-2 bg-stone-50 border border-stone-300 rounded-lg"
+                              className="w-full px-3 py-2 bg-stone-50 border border-stone-300 rounded-lg text-stone-900 font-medium"
                             />
                           </div>
 
                           <div>
-                            <label className="block font-semibold mb-1">Price (₦)</label>
+                            <label className="block font-semibold mb-1">Category</label>
+                            <select
+                              value={editingService.category}
+                              onChange={(e) =>
+                                setEditingService({
+                                  ...editingService,
+                                  category: e.target.value as any,
+                                })
+                              }
+                              className="w-full px-3 py-2 bg-stone-50 border border-stone-300 rounded-lg capitalize text-stone-900"
+                            >
+                              <option value="gel">Gel Polish</option>
+                              <option value="acrylic">Acrylic</option>
+                              <option value="biab">BIAB</option>
+                              <option value="care">Care & Pedicure</option>
+                              <option value="addons">Addons & Nail Art</option>
+                            </select>
+                          </div>
+
+                          <div>
+                            <label className="block font-semibold mb-1">Price (₦ Naira) *</label>
                             <input
                               type="number"
                               value={editingService.price}
@@ -797,7 +870,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                                   price: Number(e.target.value),
                                 })
                               }
-                              className="w-full px-3 py-2 bg-stone-50 border border-stone-300 rounded-lg font-mono font-bold"
+                              className="w-full px-3 py-2 bg-stone-50 border border-stone-300 rounded-lg font-mono font-bold text-stone-900"
                             />
                           </div>
 
@@ -809,12 +882,12 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                               onChange={(e) =>
                                 setEditingService({ ...editingService, duration: e.target.value })
                               }
-                              className="w-full px-3 py-2 bg-stone-50 border border-stone-300 rounded-lg"
+                              className="w-full px-3 py-2 bg-stone-50 border border-stone-300 rounded-lg text-stone-900"
                             />
                           </div>
 
-                          <div className="sm:col-span-3">
-                            <label className="block font-semibold mb-1">Description</label>
+                          <div className="sm:col-span-4">
+                            <label className="block font-semibold mb-1">Service Description</label>
                             <textarea
                               rows={2}
                               value={editingService.description}
@@ -824,26 +897,58 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                                   description: e.target.value,
                                 })
                               }
-                              className="w-full px-3 py-2 bg-stone-50 border border-stone-300 rounded-lg"
+                              className="w-full px-3 py-2 bg-stone-50 border border-stone-300 rounded-lg text-stone-900"
                             />
+                          </div>
+
+                          <div className="sm:col-span-4 flex items-center gap-6 pt-1">
+                            <label className="flex items-center gap-2 cursor-pointer">
+                              <input
+                                type="checkbox"
+                                checked={editingService.isAvailable}
+                                onChange={(e) =>
+                                  setEditingService({
+                                    ...editingService,
+                                    isAvailable: e.target.checked,
+                                  })
+                                }
+                                className="rounded"
+                              />
+                              <span className="font-medium text-stone-700">Active & Available for Booking</span>
+                            </label>
+
+                            <label className="flex items-center gap-2 cursor-pointer">
+                              <input
+                                type="checkbox"
+                                checked={!!editingService.popular}
+                                onChange={(e) =>
+                                  setEditingService({
+                                    ...editingService,
+                                    popular: e.target.checked,
+                                  })
+                                }
+                                className="rounded"
+                              />
+                              <span className="font-medium text-stone-700">Featured / Client Favorite</span>
+                            </label>
                           </div>
                         </div>
 
-                        <div className="flex justify-end gap-2 pt-2 border-t border-stone-100">
+                        <div className="flex justify-end gap-2 pt-3 border-t border-stone-100">
                           <button
                             type="button"
                             onClick={() => setEditingService(null)}
-                            className="px-3 py-1.5 text-xs text-stone-600 hover:text-stone-900 cursor-pointer"
+                            className="px-4 py-2 text-xs font-medium text-stone-600 hover:text-stone-900 bg-stone-100 hover:bg-stone-200 rounded-lg cursor-pointer"
                           >
                             Cancel
                           </button>
                           <button
                             type="button"
                             onClick={() => handleSaveService(editingService)}
-                            className="px-4 py-1.5 bg-stone-900 text-white text-xs font-semibold rounded-lg shadow-xs cursor-pointer flex items-center gap-1.5"
+                            className="px-5 py-2 bg-stone-900 hover:bg-stone-800 text-white text-xs font-semibold rounded-lg shadow-sm cursor-pointer flex items-center gap-1.5"
                           >
-                            <Check className="w-3.5 h-3.5" />
-                            <span>Save Changes</span>
+                            <Check className="w-4 h-4 text-emerald-400" />
+                            <span>Save Changes to Database</span>
                           </button>
                         </div>
                       </div>
@@ -856,14 +961,24 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                       className="p-4 bg-white rounded-2xl border border-stone-200/90 shadow-2xs flex flex-col sm:flex-row sm:items-center justify-between gap-4"
                     >
                       <div className="space-y-1">
-                        <div className="flex items-center gap-2">
+                        <div className="flex items-center gap-2 flex-wrap">
                           <span className="font-semibold text-sm text-stone-900">{srv.name}</span>
                           <span className="text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 bg-stone-100 text-stone-600 rounded">
                             {srv.category}
                           </span>
+                          {srv.id.startsWith('srv-') && (
+                            <span className="text-[10px] font-semibold bg-amber-50 text-amber-800 border border-amber-200 px-2 py-0.5 rounded">
+                              Uploaded by Admin
+                            </span>
+                          )}
                           {srv.popular && (
                             <span className="text-[10px] text-rose-700 font-semibold bg-rose-50 px-2 py-0.5 rounded">
                               Featured
+                            </span>
+                          )}
+                          {!srv.isAvailable && (
+                            <span className="text-[10px] text-stone-500 font-medium bg-stone-100 px-2 py-0.5 rounded">
+                              Unavailable
                             </span>
                           )}
                         </div>
@@ -878,16 +993,17 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
 
                         <div className="flex items-center gap-2">
                           <button
-                            onClick={() => setEditingService(srv)}
-                            className="p-2 text-stone-600 hover:text-stone-900 hover:bg-stone-100 rounded-lg transition-colors cursor-pointer"
-                            title="Edit Service & Price"
+                            onClick={() => setEditingService({ ...srv })}
+                            className="px-3.5 py-2 bg-stone-900 hover:bg-stone-800 text-white rounded-xl text-xs font-semibold flex items-center gap-1.5 transition-all shadow-xs cursor-pointer active:scale-95"
+                            title="Edit Service Details & Price"
                           >
-                            <Edit2 className="w-4 h-4" />
+                            <Edit2 className="w-3.5 h-3.5 text-rose-300" />
+                            <span>Edit Service</span>
                           </button>
 
                           <button
                             onClick={() => handleDeleteService(srv.id)}
-                            className="p-2 text-stone-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-colors cursor-pointer"
+                            className="p-2 text-stone-400 hover:text-rose-600 hover:bg-rose-50 rounded-xl transition-colors cursor-pointer"
                             title="Delete service"
                           >
                             <Trash2 className="w-4 h-4" />
@@ -1054,43 +1170,135 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
 
               {/* Gallery Items Grid */}
               <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-                {galleryItems.map((item) => (
-                  <div
-                    key={item.id}
-                    className="p-3 bg-white rounded-2xl border border-stone-200/90 shadow-2xs space-y-2 flex flex-col justify-between"
-                  >
-                    <div>
-                      <div className="aspect-square rounded-xl overflow-hidden bg-stone-100 mb-2 relative">
-                        <img
-                          src={item.imageUrl}
-                          alt={item.title}
-                          className="w-full h-full object-cover"
-                        />
-                        <span className="absolute top-2 left-2 px-2 py-0.5 bg-black/60 text-white text-[9px] uppercase font-bold rounded">
-                          {item.category}
-                        </span>
+                {galleryItems.map((item) => {
+                  const isEditing = editingGalleryItem?.id === item.id;
+
+                  if (isEditing && editingGalleryItem) {
+                    return (
+                      <div
+                        key={item.id}
+                        className="p-4 bg-white rounded-2xl border-2 border-stone-900 shadow-md space-y-3 flex flex-col justify-between sm:col-span-2 md:col-span-1"
+                      >
+                        <div className="space-y-2">
+                          <h4 className="font-bold text-xs text-stone-900 flex items-center gap-1.5 border-b border-stone-200 pb-1.5">
+                            <Edit2 className="w-3.5 h-3.5 text-rose-700" />
+                            <span>Edit Photo Details</span>
+                          </h4>
+
+                          <div>
+                            <label className="block text-[11px] font-semibold text-stone-700 mb-0.5">Title *</label>
+                            <input
+                              type="text"
+                              value={editingGalleryItem.title}
+                              onChange={(e) =>
+                                setEditingGalleryItem({ ...editingGalleryItem, title: e.target.value })
+                              }
+                              className="w-full px-2.5 py-1.5 bg-stone-50 border border-stone-300 rounded-lg text-xs"
+                            />
+                          </div>
+
+                          <div>
+                            <label className="block text-[11px] font-semibold text-stone-700 mb-0.5">Category</label>
+                            <select
+                              value={editingGalleryItem.category}
+                              onChange={(e) =>
+                                setEditingGalleryItem({
+                                  ...editingGalleryItem,
+                                  category: e.target.value as any,
+                                })
+                              }
+                              className="w-full px-2.5 py-1.5 bg-stone-50 border border-stone-300 rounded-lg text-xs"
+                            >
+                              <option value="acrylic">Acrylic</option>
+                              <option value="gel">Gel Polish</option>
+                              <option value="nailart">Nail Art & 3D</option>
+                              <option value="minimal">Minimal & French</option>
+                              <option value="bridal">Bridal & Glam</option>
+                            </select>
+                          </div>
+
+                          <div>
+                            <label className="block text-[11px] font-semibold text-stone-700 mb-0.5">Description</label>
+                            <textarea
+                              rows={2}
+                              value={editingGalleryItem.description}
+                              onChange={(e) =>
+                                setEditingGalleryItem({ ...editingGalleryItem, description: e.target.value })
+                              }
+                              className="w-full px-2.5 py-1.5 bg-stone-50 border border-stone-300 rounded-lg text-xs"
+                            />
+                          </div>
+                        </div>
+
+                        <div className="flex justify-end gap-1.5 pt-2 border-t border-stone-100">
+                          <button
+                            type="button"
+                            onClick={() => setEditingGalleryItem(null)}
+                            className="px-3 py-1.5 text-xs text-stone-600 hover:text-stone-900 bg-stone-100 rounded-lg cursor-pointer"
+                          >
+                            Cancel
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => handleSaveGallery(editingGalleryItem)}
+                            className="px-3.5 py-1.5 bg-stone-900 hover:bg-stone-800 text-white text-xs font-semibold rounded-lg cursor-pointer flex items-center gap-1"
+                          >
+                            <Check className="w-3.5 h-3.5 text-emerald-400" />
+                            <span>Save</span>
+                          </button>
+                        </div>
+                      </div>
+                    );
+                  }
+
+                  return (
+                    <div
+                      key={item.id}
+                      className="p-3 bg-white rounded-2xl border border-stone-200/90 shadow-2xs space-y-2 flex flex-col justify-between"
+                    >
+                      <div>
+                        <div className="aspect-square rounded-xl overflow-hidden bg-stone-100 mb-2 relative">
+                          <img
+                            src={item.imageUrl}
+                            alt={item.title}
+                            className="w-full h-full object-cover"
+                          />
+                          <span className="absolute top-2 left-2 px-2 py-0.5 bg-black/60 text-white text-[9px] uppercase font-bold rounded">
+                            {item.category}
+                          </span>
+                        </div>
+
+                        <h4 className="font-editorial text-base font-bold text-stone-900 line-clamp-1">
+                          {item.title}
+                        </h4>
+                        <p className="text-xs text-stone-500 line-clamp-2 mt-0.5">
+                          {item.description}
+                        </p>
                       </div>
 
-                      <h4 className="font-editorial text-base font-bold text-stone-900 line-clamp-1">
-                        {item.title}
-                      </h4>
-                      <p className="text-xs text-stone-500 line-clamp-2 mt-0.5">
-                        {item.description}
-                      </p>
+                      <div className="pt-2 border-t border-stone-100 flex items-center justify-between">
+                        <span className="text-[10px] text-stone-400 font-mono">{item.createdAt}</span>
+                        <div className="flex items-center gap-1.5">
+                          <button
+                            onClick={() => setEditingGalleryItem({ ...item })}
+                            className="px-2.5 py-1 text-xs font-semibold text-stone-700 hover:text-stone-900 bg-stone-100 hover:bg-stone-200 rounded-lg flex items-center gap-1 transition-colors cursor-pointer"
+                            title="Edit Photo Info"
+                          >
+                            <Edit2 className="w-3 h-3 text-stone-500" />
+                            <span>Edit</span>
+                          </button>
+                          <button
+                            onClick={() => handleDeleteGallery(item.id)}
+                            className="p-1.5 text-stone-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-colors cursor-pointer"
+                            title="Delete gallery item"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        </div>
+                      </div>
                     </div>
-
-                    <div className="pt-2 border-t border-stone-100 flex items-center justify-between">
-                      <span className="text-[10px] text-stone-400 font-mono">{item.createdAt}</span>
-                      <button
-                        onClick={() => handleDeleteGallery(item.id)}
-                        className="p-1.5 text-stone-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-colors cursor-pointer"
-                        title="Delete gallery item"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </button>
-                    </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             </div>
           )}
