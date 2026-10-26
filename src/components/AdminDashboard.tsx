@@ -33,6 +33,9 @@ import {
   ShieldCheck,
   KeyRound,
   LogOut,
+  Server,
+  ExternalLink,
+  GitBranch,
 } from 'lucide-react';
 
 interface AdminDashboardProps {
@@ -56,7 +59,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
   galleryItems,
   onRefreshData,
 }) => {
-  const [activeTab, setActiveTab] = useState<'bookings' | 'inquiries' | 'pricing' | 'gallery' | 'security'>('bookings');
+  const [activeTab, setActiveTab] = useState<'bookings' | 'inquiries' | 'pricing' | 'gallery' | 'security' | 'deploy'>('bookings');
 
   // Security & 2FA State
   const [currentPinInput, setCurrentPinInput] = useState('');
@@ -293,6 +296,15 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
 
           <div className="flex items-center gap-2">
             <button
+              onClick={() => setActiveTab('deploy')}
+              className="flex items-center gap-1.5 px-3 py-1.5 bg-amber-500/20 hover:bg-amber-500/30 text-amber-200 border border-amber-500/40 rounded-lg text-xs font-semibold transition-colors cursor-pointer"
+              title="GitHub and Hostinger ready deployment hub"
+            >
+              <GitBranch className="w-3.5 h-3.5 text-amber-400" />
+              <span>Deploy (GitHub / Hostinger)</span>
+            </button>
+
+            <button
               onClick={handleExportBackup}
               className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 bg-stone-800 hover:bg-stone-700 text-stone-200 rounded-lg text-xs font-medium transition-colors cursor-pointer"
               title="Download complete JSON database backup"
@@ -426,6 +438,18 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
           >
             <Lock className="w-4 h-4 text-rose-700" />
             <span>Security & 2FA Settings</span>
+          </button>
+
+          <button
+            onClick={() => setActiveTab('deploy')}
+            className={`py-3 px-4 text-xs font-semibold flex items-center gap-2 border-b-2 cursor-pointer transition-colors whitespace-nowrap ${
+              activeTab === 'deploy'
+                ? 'border-amber-600 text-amber-900 bg-amber-50/50'
+                : 'border-transparent text-amber-700 hover:text-amber-900'
+            }`}
+          >
+            <GitBranch className="w-4 h-4 text-amber-600" />
+            <span>Deploy (GitHub & Hostinger)</span>
           </button>
         </div>
 
@@ -1405,6 +1429,224 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                 </p>
                 <div className="inline-block p-2.5 bg-white border border-stone-300 rounded-lg font-mono text-xs font-bold text-stone-800 tracking-wider">
                   FN-SEC-990142
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* TAB 6: GITHUB & HOSTINGER DEPLOYMENT */}
+          {activeTab === 'deploy' && (
+            <div className="space-y-6 max-w-4xl">
+              <div>
+                <h3 className="font-editorial text-xl font-bold text-stone-900 flex items-center gap-2">
+                  <GitBranch className="w-5 h-5 text-stone-800" />
+                  <span>Deployment Hub: GitHub & Hostinger</span>
+                </h3>
+                <p className="text-xs text-stone-500">
+                  Your project is 100% prepared for direct upload to GitHub with automated GitHub Pages hosting, as well as Hostinger <code className="bg-stone-200 px-1 py-0.5 rounded text-stone-800 font-mono">public_html</code>.
+                </p>
+              </div>
+
+              {/* SECTION A: GITHUB READY CARD */}
+              <div className="p-5 rounded-2xl bg-white border border-stone-200/90 shadow-2xs space-y-4">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                  <div>
+                    <div className="flex items-center gap-2 mb-1">
+                      <span className="w-2.5 h-2.5 rounded-full bg-emerald-500"></span>
+                      <span className="text-xs uppercase font-mono tracking-wider text-emerald-700 font-bold">
+                        Git Initialized & Commit Ready
+                      </span>
+                    </div>
+                    <h4 className="font-editorial text-lg font-bold text-stone-900 flex items-center gap-2">
+                      <GitBranch className="w-4 h-4 text-stone-700" />
+                      <span>Upload Directly to GitHub</span>
+                    </h4>
+                    <p className="text-xs text-stone-500">
+                      Clean <code className="font-mono text-stone-800">.gitignore</code>, production <code className="font-mono text-stone-800">README.md</code>, and automated <code className="font-mono text-stone-800">.github/workflows/deploy.yml</code> are configured on branch <span className="font-mono font-bold text-stone-800">main</span>.
+                    </p>
+                  </div>
+
+                  <a
+                    href="https://github.com/new"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="px-4 py-2.5 bg-stone-900 hover:bg-stone-800 text-white font-semibold rounded-xl text-xs flex items-center gap-2 shadow-xs transition-colors cursor-pointer shrink-0"
+                  >
+                    <ExternalLink className="w-3.5 h-3.5 text-stone-300" />
+                    <span>Create GitHub Repo</span>
+                  </a>
+                </div>
+
+                {/* 3 Step Git Push Guide */}
+                <div className="p-4 bg-stone-900 text-stone-200 rounded-xl space-y-2 text-xs font-mono">
+                  <div className="text-[11px] text-stone-400 font-sans font-semibold uppercase tracking-wider mb-2 flex items-center justify-between">
+                    <span>Quick Push Commands (Terminal)</span>
+                    <span className="text-emerald-400 font-mono">Branch: main</span>
+                  </div>
+                  <div className="text-stone-400"># 1. Connect your new GitHub repo</div>
+                  <div className="text-amber-300 select-all font-semibold">
+                    git remote add origin https://github.com/&lt;YOUR-USERNAME&gt;/&lt;YOUR-REPO&gt;.git
+                  </div>
+                  <div className="text-stone-400 pt-1"># 2. Push all code to main branch</div>
+                  <div className="text-emerald-300 select-all font-semibold">
+                    git push -u origin main
+                  </div>
+                </div>
+
+                {/* GitHub Actions Pages Callout */}
+                <div className="p-3 bg-emerald-50 border border-emerald-200 rounded-xl flex items-start gap-3 text-xs text-emerald-900">
+                  <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
+                  <div>
+                    <span className="font-bold">Automated Free Hosting via GitHub Pages:</span>
+                    <p className="text-emerald-800 mt-0.5 text-[11px] leading-relaxed">
+                      Go to your GitHub repository <span className="font-semibold">Settings &rarr; Pages</span> and set Source to <span className="font-semibold">GitHub Actions</span>. The included <code className="font-mono bg-emerald-100 px-1 rounded">deploy.yml</code> workflow will automatically build and publish your website live for free at <span className="font-semibold">https://&lt;username&gt;.github.io/&lt;repo&gt;/</span> on every push!
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              {/* SECTION B: HOSTINGER READY CARD */}
+              <div className="p-5 rounded-2xl bg-stone-900 text-white shadow-md border border-stone-800 space-y-4">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                  <div>
+                    <div className="flex items-center gap-2 mb-1">
+                      <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse"></span>
+                      <span className="text-xs uppercase font-mono tracking-wider text-emerald-400 font-semibold">
+                        Hostinger Upload Package
+                      </span>
+                    </div>
+                    <h4 className="font-editorial text-lg font-bold text-white flex items-center gap-2">
+                      <Server className="w-4 h-4 text-amber-400" />
+                      <span>hostinger-deploy.zip</span>
+                    </h4>
+                    <p className="text-xs text-stone-300">
+                      Contains complete production bundle: HTML, JS, CSS, circular gold logo, and Hostinger-optimized <code className="text-amber-300">.htaccess</code>.
+                    </p>
+                  </div>
+
+                  <div className="flex flex-wrap items-center gap-2">
+                    <a
+                      href="/hostinger-deploy.zip"
+                      download="hostinger-deploy.zip"
+                      className="px-4 py-2.5 bg-amber-400 hover:bg-amber-300 text-stone-950 font-bold rounded-xl text-xs flex items-center gap-2 shadow-sm transition-all cursor-pointer"
+                    >
+                      <Download className="w-4 h-4 text-stone-950" />
+                      <span>Download hostinger-deploy.zip</span>
+                    </a>
+
+                    <a
+                      href="/HOSTINGER_DEPLOYMENT_GUIDE.md"
+                      download="HOSTINGER_DEPLOYMENT_GUIDE.md"
+                      className="px-3.5 py-2.5 bg-stone-800 hover:bg-stone-700 text-stone-200 font-medium rounded-xl text-xs flex items-center gap-1.5 transition-colors cursor-pointer border border-stone-700"
+                    >
+                      <span>Deployment Guide (.md)</span>
+                    </a>
+                  </div>
+                </div>
+
+                <div className="pt-2 border-t border-stone-800 flex flex-wrap gap-4 text-xs text-stone-400">
+                  <div className="flex items-center gap-1.5">
+                    <CheckCircle2 className="w-4 h-4 text-emerald-400" />
+                    <span>SPA URL Rewrite (.htaccess)</span>
+                  </div>
+                  <div className="flex items-center gap-1.5">
+                    <CheckCircle2 className="w-4 h-4 text-emerald-400" />
+                    <span>Gzip & LiteSpeed Compression</span>
+                  </div>
+                  <div className="flex items-center gap-1.5">
+                    <CheckCircle2 className="w-4 h-4 text-emerald-400" />
+                    <span>Relative Asset Paths</span>
+                  </div>
+                  <div className="flex items-center gap-1.5">
+                    <CheckCircle2 className="w-4 h-4 text-emerald-400" />
+                    <span>IndexedDB Persistence</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Step-by-Step Visual Cards */}
+              <div className="space-y-3">
+                <h4 className="font-bold text-sm text-stone-900">
+                  Hostinger 2-Minute Upload Instructions
+                </h4>
+                
+                <div className="grid grid-cols-1 md:grid-cols-4 gap-3 text-xs">
+                  <div className="p-4 bg-white rounded-xl border border-stone-200/90 shadow-2xs space-y-2">
+                    <div className="w-6 h-6 rounded-full bg-stone-900 text-white font-bold text-xs flex items-center justify-center">
+                      1
+                    </div>
+                    <h5 className="font-bold text-stone-900">Open Hostinger hPanel</h5>
+                    <p className="text-stone-500 leading-relaxed">
+                      Log in to <span className="text-stone-800 font-semibold">hpanel.hostinger.com</span>, select your website, and open <span className="text-stone-800 font-semibold">File Manager</span>.
+                    </p>
+                  </div>
+
+                  <div className="p-4 bg-white rounded-xl border border-stone-200/90 shadow-2xs space-y-2">
+                    <div className="w-6 h-6 rounded-full bg-stone-900 text-white font-bold text-xs flex items-center justify-center">
+                      2
+                    </div>
+                    <h5 className="font-bold text-stone-900">Open public_html</h5>
+                    <p className="text-stone-500 leading-relaxed">
+                      Double-click into <code className="bg-stone-100 px-1 py-0.5 rounded font-mono text-stone-800">public_html</code>. If there is a default placeholder file, delete it.
+                    </p>
+                  </div>
+
+                  <div className="p-4 bg-white rounded-xl border border-stone-200/90 shadow-2xs space-y-2">
+                    <div className="w-6 h-6 rounded-full bg-amber-500 text-stone-950 font-bold text-xs flex items-center justify-center">
+                      3
+                    </div>
+                    <h5 className="font-bold text-stone-900">Upload ZIP</h5>
+                    <p className="text-stone-500 leading-relaxed">
+                      Click the <span className="font-semibold text-stone-800">Upload</span> icon in the top right menu and choose <code className="bg-stone-100 px-1 py-0.5 rounded font-mono text-stone-800">hostinger-deploy.zip</code>.
+                    </p>
+                  </div>
+
+                  <div className="p-4 bg-white rounded-xl border border-stone-200/90 shadow-2xs space-y-2">
+                    <div className="w-6 h-6 rounded-full bg-emerald-600 text-white font-bold text-xs flex items-center justify-center">
+                      4
+                    </div>
+                    <h5 className="font-bold text-stone-900">Extract in public_html</h5>
+                    <p className="text-stone-500 leading-relaxed">
+                      Right-click the ZIP, select <span className="font-semibold text-stone-800">Extract</span> into <code className="bg-stone-100 px-1 py-0.5 rounded font-mono text-stone-800">.</code> or <code className="bg-stone-100 px-1 py-0.5 rounded font-mono text-stone-800">public_html</code>. You are live!
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Technical Specifications */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="p-4 bg-white rounded-xl border border-stone-200/90 space-y-2 text-xs">
+                  <h4 className="font-bold text-stone-900 flex items-center gap-1.5">
+                    <CheckCircle2 className="w-4 h-4 text-emerald-600" />
+                    <span>Hostinger .htaccess Rules Included</span>
+                  </h4>
+                  <p className="text-stone-500">
+                    Hostinger runs on Apache and LiteSpeed web servers. Without URL rewriting, reloading a page on a Single Page Application yields a 404 error. The included <code className="font-mono text-stone-700">.htaccess</code> contains:
+                  </p>
+                  <pre className="p-2.5 bg-stone-900 text-stone-200 rounded-lg font-mono text-[11px] overflow-x-auto leading-relaxed">
+{`RewriteEngine On
+RewriteBase /
+RewriteRule ^index\\.html$ - [L]
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule . /index.html [L]`}
+                  </pre>
+                </div>
+
+                <div className="p-4 bg-white rounded-xl border border-stone-200/90 space-y-2 text-xs">
+                  <h4 className="font-bold text-stone-900 flex items-center gap-1.5">
+                    <Sparkles className="w-4 h-4 text-amber-600" />
+                    <span>How to Rebuild & Update</span>
+                  </h4>
+                  <p className="text-stone-500">
+                    Whenever you edit services, photos, or styles in development and want to generate a new package for Hostinger:
+                  </p>
+                  <div className="p-3 bg-stone-100 rounded-lg border border-stone-200 font-mono text-xs text-stone-800 flex items-center justify-between">
+                    <span>npm run build:hostinger</span>
+                  </div>
+                  <p className="text-stone-500 text-[11px]">
+                    This script compiles the production assets with Vite and automatically regenerates <code className="font-mono text-stone-700">hostinger-deploy.zip</code>.
+                  </p>
                 </div>
               </div>
             </div>
