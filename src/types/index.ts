@@ -118,7 +118,7 @@ export const DEFAULT_BUSINESS_SETTINGS: BusinessSettings = {
   name: 'Fazzy Nails',
   ownerName: 'Studio Owner',
   ownerEmail: 'owner@fazzynails.com',
-  ownerPassword: 'admin',
+  ownerPassword: '',
   motto: 'Nails that speak class',
   phone: '+234 907 281 7540',
   phoneClean: '+2349072817540',

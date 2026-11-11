@@ -4,38 +4,24 @@ import { getAuth } from 'firebase/auth';
 import { getFirestore, doc, getDocFromServer } from 'firebase/firestore';
 
 const firebaseConfig = {
-  apiKey: 'AIzaSyCZcbIjFn2i6gJC5zRYisPyse79dCBoF7Q',
-  authDomain: 'gen-lang-client-0516407286.firebaseapp.com',
-  projectId: 'gen-lang-client-0516407286',
-  storageBucket: 'gen-lang-client-0516407286.firebasestorage.app',
-  messagingSenderId: '182106751793',
-  appId: '1:182106751793:web:bebd4387b8d34ae6da2610',
-  measurementId: 'G-57L62J2J7L',
+  apiKey: import.meta.env.VITE_FIREBASE_API_KEY || '',
+  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN || '',
+  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID || '',
+  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET || '',
+  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID || '',
+  appId: import.meta.env.VITE_FIREBASE_APP_ID || '',
+  measurementId: import.meta.env.VITE_FIREBASE_MEASUREMENT_ID || '',
 };
+
+if (!firebaseConfig.apiKey || !firebaseConfig.projectId) {
+  console.error(
+    'Missing Firebase configuration. Set VITE_FIREBASE_API_KEY and VITE_FIREBASE_PROJECT_ID in your environment variables.'
+  );
+}
 
 export const app = initializeApp(firebaseConfig);
 export const auth = getAuth(app);
 export const db = getFirestore(app);
-
-export const PRIMARY_ADMIN_EMAIL = 'sidehustle289@gmail.com';
-
-export function isAuthorizedAdminEmail(
-  email?: string | null,
-  configuredOwnerEmail?: string
-): boolean {
-  if (!email) return false;
-  const normalized = email.trim().toLowerCase();
-  if (normalized === PRIMARY_ADMIN_EMAIL.toLowerCase()) return true;
-  if (
-    configuredOwnerEmail &&
-    configuredOwnerEmail.trim() !== '' &&
-    configuredOwnerEmail.trim().toLowerCase() !== 'owner@fazzynails.com' &&
-    normalized === configuredOwnerEmail.trim().toLowerCase()
-  ) {
-    return true;
-  }
-  return false;
-}
 
 async function testFirestoreConnection() {
   try {
@@ -51,7 +37,7 @@ if (typeof window !== 'undefined') {
   testFirestoreConnection();
   isSupported()
     .then((supported) => {
-      if (supported) {
+      if (supported && firebaseConfig.measurementId) {
         getAnalytics(app);
       }
     })
