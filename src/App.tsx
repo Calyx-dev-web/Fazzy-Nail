@@ -187,6 +187,7 @@ export default function App() {
       <AdminLoginPage
         onLoginSuccess={() => setViewMode('admin_portal')}
         onBackToSite={() => setViewMode('public')}
+        logoUrl={settings.logoUrl}
       />
     );
   }
@@ -219,6 +220,7 @@ export default function App() {
         currentPage={currentPage}
         setCurrentPage={setCurrentPage}
         pendingBookingsCount={pendingBookingsCount}
+        logoUrl={settings.logoUrl}
       />
 
       {/* Main Page Content Flow */}
@@ -275,6 +277,7 @@ export default function App() {
         onOpenBooking={() => handleOpenBooking()}
         onOpenAdmin={handleOpenAdmin}
         onNavigate={handleNavigate}
+        logoUrl={settings.logoUrl}
       />
 
       {/* Interactive Booking Flow Modal */}

@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Phone, Calendar, Menu, X, Shield, MessageSquare } from 'lucide-react';
 import { BUSINESS_INFO, getWhatsAppUrl } from '../types';
-import { IMAGES } from '../assets/images';
+import { IMAGES, resolveImageUrl } from '../assets/images';
 
 interface NavbarProps {
   onOpenBooking: () => void;
@@ -9,6 +9,7 @@ interface NavbarProps {
   currentPage: string;
   setCurrentPage: (page: string) => void;
   pendingBookingsCount?: number;
+  logoUrl?: string;
 }
 
 export const Navbar: React.FC<NavbarProps> = ({
@@ -17,6 +18,7 @@ export const Navbar: React.FC<NavbarProps> = ({
   currentPage,
   setCurrentPage,
   pendingBookingsCount = 0,
+  logoUrl,
 }) => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
@@ -81,7 +83,7 @@ export const Navbar: React.FC<NavbarProps> = ({
           className="text-left group flex items-center gap-2 sm:gap-3 shrink min-w-0 cursor-pointer"
         >
           <img
-            src={IMAGES.logo}
+            src={resolveImageUrl(logoUrl || IMAGES.logo)}
             alt="Fazzynails Logo"
             className="w-9 h-9 sm:w-11 sm:h-11 rounded-full object-cover border-2 border-amber-300 shadow-xs group-hover:scale-105 transition-transform shrink-0"
           />

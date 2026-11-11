@@ -1,16 +1,18 @@
 import React, { useState } from 'react';
 import { Shield, Lock, Mail, Eye, EyeOff, Sparkles, CheckCircle2, ArrowRight, Heart } from 'lucide-react';
-import { IMAGES } from '../assets/images';
+import { IMAGES, resolveImageUrl } from '../assets/images';
 import { getBusinessSettings, resetAdminCredentials } from '../services/db';
 
 interface AdminLoginPageProps {
   onLoginSuccess: () => void;
   onBackToSite: () => void;
+  logoUrl?: string;
 }
 
 export const AdminLoginPage: React.FC<AdminLoginPageProps> = ({
   onLoginSuccess,
   onBackToSite,
+  logoUrl,
 }) => {
   const [email, setEmail] = useState('owner@fazzynails.com');
   const [password, setPassword] = useState('');
@@ -100,7 +102,7 @@ export const AdminLoginPage: React.FC<AdminLoginPageProps> = ({
           <div className="text-center space-y-3 mb-8">
             <div className="relative w-20 h-20 mx-auto rounded-full p-1 bg-[#F8F3EC] border-2 border-[#B88746] shadow-md flex items-center justify-center overflow-hidden">
               <img
-                src={IMAGES.logo}
+                src={resolveImageUrl(logoUrl || IMAGES.logo)}
                 alt="Fazzy Nails Logo"
                 className="w-full h-full rounded-full object-cover"
               />

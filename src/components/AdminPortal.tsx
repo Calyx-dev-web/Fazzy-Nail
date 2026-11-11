@@ -1657,21 +1657,34 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
 
                       <div>
                         <label className="block font-semibold mb-1">Logo Image File or URL</label>
-                        <div className="flex gap-2">
+                        <div className="flex items-center gap-2">
+                          <img
+                            src={resolveImageUrl(editSettings.logoUrl || IMAGES.logo)}
+                            alt="Logo preview"
+                            className="w-10 h-10 rounded-full object-cover border border-[#B88746] shrink-0 bg-[#F8F3EC]"
+                          />
                           <input
                             type="text"
                             value={editSettings.logoUrl}
                             onChange={(e) => setEditSettings({ ...editSettings, logoUrl: e.target.value })}
-                            className="flex-1 px-3.5 py-2.5 bg-[#F8F3EC] border border-[#E8D8C7] rounded-xl text-[#30231F] text-xs font-mono"
+                            className="flex-1 px-3.5 py-2.5 bg-[#F8F3EC] border border-[#E8D8C7] rounded-xl text-[#30231F] text-xs font-mono min-w-0"
                           />
-                          <label className="px-3 py-2 bg-[#30231F] text-white text-xs rounded-xl cursor-pointer shrink-0 flex items-center gap-1">
+                          <label className="px-3 py-2.5 bg-[#30231F] hover:bg-[#B88746] text-white text-xs rounded-xl cursor-pointer shrink-0 flex items-center gap-1 transition-colors">
                             <Upload className="w-3.5 h-3.5" />
                             <span>Upload</span>
                             <input
                               type="file"
                               accept="image/*"
                               className="hidden"
-                              onChange={(e) => handleImageFileUpload(e, (url) => setEditSettings({ ...editSettings, logoUrl: url }))}
+                              onChange={(e) =>
+                                handleImageFileUpload(e, async (url) => {
+                                  const updated = { ...editSettings, logoUrl: url };
+                                  setEditSettings(updated);
+                                  await saveBusinessSettings(updated);
+                                  showToast('Logo image updated! Changes reflect live across the website.');
+                                  onRefreshData();
+                                })
+                              }
                             />
                           </label>
                         </div>
