@@ -18,8 +18,8 @@ function resolveBasePath(): string {
     }
     return repo ? `/${repo}/` : './';
   }
-  // 3. Fallback to relative path for local development and Hostinger production builds
-  return './';
+  // 3. Default to root '/' for Vercel, Netlify, and root domains so subroutes like /Admin load assets cleanly
+  return '/';
 }
 
 export default defineConfig(() => {
