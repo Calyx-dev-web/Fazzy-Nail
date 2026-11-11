@@ -830,7 +830,7 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
               {/* Owner Avatar */}
               <div className="flex items-center gap-2 pl-2 border-l border-[#E8D8C7]">
                 <img
-                  src={settings.profileImage}
+                  src={resolveImageUrl(settings.profileImage || IMAGES.logo)}
                   alt={settings.ownerName}
                   className="w-9 h-9 rounded-full object-cover border-2 border-[#B88746]"
                 />
@@ -1698,6 +1698,41 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
                           onChange={(e) => setEditSettings({ ...editSettings, ownerName: e.target.value })}
                           className="w-full px-3.5 py-2.5 bg-[#F8F3EC] border border-[#E8D8C7] rounded-xl text-[#30231F]"
                         />
+                      </div>
+
+                      <div className="sm:col-span-2">
+                        <label className="block font-semibold mb-1">Owner Profile Image (File or URL)</label>
+                        <div className="flex items-center gap-2">
+                          <img
+                            src={resolveImageUrl(editSettings.profileImage || IMAGES.logo)}
+                            alt="Profile preview"
+                            className="w-10 h-10 rounded-full object-cover border border-[#B88746] shrink-0 bg-[#F8F3EC]"
+                          />
+                          <input
+                            type="text"
+                            value={editSettings.profileImage}
+                            onChange={(e) => setEditSettings({ ...editSettings, profileImage: e.target.value })}
+                            className="flex-1 px-3.5 py-2.5 bg-[#F8F3EC] border border-[#E8D8C7] rounded-xl text-[#30231F] text-xs font-mono min-w-0"
+                          />
+                          <label className="px-3 py-2.5 bg-[#30231F] hover:bg-[#B88746] text-white text-xs rounded-xl cursor-pointer shrink-0 flex items-center gap-1 transition-colors">
+                            <Upload className="w-3.5 h-3.5" />
+                            <span>Upload</span>
+                            <input
+                              type="file"
+                              accept="image/*"
+                              className="hidden"
+                              onChange={(e) =>
+                                handleImageFileUpload(e, async (url) => {
+                                  const updated = { ...editSettings, profileImage: url };
+                                  setEditSettings(updated);
+                                  await saveBusinessSettings(updated);
+                                  showToast('Admin profile image updated!');
+                                  onRefreshData();
+                                })
+                              }
+                            />
+                          </label>
+                        </div>
                       </div>
                     </div>
                   </div>
