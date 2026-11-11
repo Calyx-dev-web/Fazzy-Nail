@@ -56,7 +56,7 @@ export default function App() {
   const [customers, setCustomers] = useState<Customer[]>([]);
   const [invoices, setInvoices] = useState<Invoice[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
-  const [firebaseUser, setFirebaseUser] = useState<User | null>(auth?.currentUser ?? null);
+  const [firebaseUser, setFirebaseUser] = useState<User | null>(auth.currentUser);
 
   // Listen to Firebase Auth state and URL pathname/hash for /Admin routing
   useEffect(() => {
@@ -71,23 +71,12 @@ export default function App() {
       }
     };
 
-    if (!auth) {
-      syncAdminRoute(null);
-      const handleRouteChange = () => syncAdminRoute(null);
-      window.addEventListener('hashchange', handleRouteChange);
-      window.addEventListener('popstate', handleRouteChange);
-      return () => {
-        window.removeEventListener('hashchange', handleRouteChange);
-        window.removeEventListener('popstate', handleRouteChange);
-      };
-    }
-
     const unsubscribe = onAuthStateChanged(auth, (user) => {
       setFirebaseUser(user);
       syncAdminRoute(user);
     });
 
-    const handleRouteChange = () => syncAdminRoute(auth?.currentUser ?? null);
+    const handleRouteChange = () => syncAdminRoute(auth.currentUser);
     window.addEventListener('hashchange', handleRouteChange);
     window.addEventListener('popstate', handleRouteChange);
 
@@ -181,13 +170,11 @@ export default function App() {
   };
 
   const handleOpenAdmin = () => {
-    setViewMode(firebaseUser || auth?.currentUser ? 'admin_portal' : 'admin_login');
+    setViewMode(firebaseUser || auth.currentUser ? 'admin_portal' : 'admin_login');
   };
 
   const handleLogout = async () => {
-    if (auth) {
-      await signOut(auth);
-    }
+    await signOut(auth);
     setViewMode('admin_login');
   };
 

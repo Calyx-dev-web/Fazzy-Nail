@@ -66,13 +66,13 @@ function handleFirestoreError(
   const errInfo: FirestoreErrorInfo = {
     error: error instanceof Error ? error.message : String(error),
     authInfo: {
-      userId: auth?.currentUser?.uid,
-      email: auth?.currentUser?.email,
-      emailVerified: auth?.currentUser?.emailVerified,
-      isAnonymous: auth?.currentUser?.isAnonymous,
-      tenantId: auth?.currentUser?.tenantId,
+      userId: auth.currentUser?.uid,
+      email: auth.currentUser?.email,
+      emailVerified: auth.currentUser?.emailVerified,
+      isAnonymous: auth.currentUser?.isAnonymous,
+      tenantId: auth.currentUser?.tenantId,
       providerInfo:
-        auth?.currentUser?.providerData?.map((provider) => ({
+        auth.currentUser?.providerData?.map((provider) => ({
           providerId: provider.providerId,
           email: provider.email,
         })) || [],
@@ -202,9 +202,8 @@ export async function getBusinessSettings(): Promise<BusinessSettings> {
     // fallback to localStorage
   }
 
-  if (firestoreDb) {
-    try {
-      const snap = await getDoc(doc(firestoreDb, 'settings', 'main'));
+  try {
+    const snap = await getDoc(doc(firestoreDb, 'settings', 'main'));
     if (snap.exists()) {
       const remote = snap.data() as Partial<BusinessSettings>;
       const merged: BusinessSettings = {
@@ -224,9 +223,8 @@ export async function getBusinessSettings(): Promise<BusinessSettings> {
       saveLocalStorageFallbackSingle('fzn_settings', merged);
       return merged;
     }
-    } catch (error) {
-      console.warn('Firestore settings read fallback:', error);
-    }
+  } catch (error) {
+    console.warn('Firestore settings read fallback:', error);
   }
 
   if (localSettings.ownerName === 'Favour Okeke') {
@@ -244,7 +242,7 @@ export async function saveBusinessSettings(settings: BusinessSettings): Promise<
   }
   saveLocalStorageFallbackSingle('fzn_settings', settings);
 
-  if (auth?.currentUser && firestoreDb) {
+  if (auth.currentUser) {
     try {
       const { ownerPassword: _omitted, ...publicSafeSettings } = settings;
       await setDoc(doc(firestoreDb, 'settings', 'main'), stripUndefined(publicSafeSettings));
@@ -274,7 +272,7 @@ export async function resetAdminCredentials(): Promise<BusinessSettings> {
 
 // ----------------- BOOKINGS -----------------
 export async function getBookings(): Promise<Booking[]> {
-  if (auth?.currentUser && firestoreDb) {
+  if (auth.currentUser) {
     try {
       const snap = await getDocs(collection(firestoreDb, 'bookings'));
       let items = snap.docs.map((d) => ({ ...d.data(), id: d.id } as Booking));
@@ -308,12 +306,10 @@ export async function saveBooking(booking: Booking): Promise<Booking> {
     saveLocalStorageFallback('fzn_bookings', [booking, ...filtered]);
   }
 
-  if (firestoreDb) {
-    try {
-      await setDoc(doc(firestoreDb, 'bookings', booking.id), stripUndefined({ ...booking }));
-    } catch (error) {
-      handleFirestoreError(error, OperationType.WRITE, `bookings/${booking.id}`);
-    }
+  try {
+    await setDoc(doc(firestoreDb, 'bookings', booking.id), stripUndefined({ ...booking }));
+  } catch (error) {
+    handleFirestoreError(error, OperationType.WRITE, `bookings/${booking.id}`);
   }
 
   notifyDataChanged('bookings');
@@ -341,7 +337,7 @@ export async function deleteBooking(id: string): Promise<void> {
     saveLocalStorageFallback('fzn_bookings', list.filter((b) => b.id !== id));
   }
 
-  if (auth?.currentUser && firestoreDb) {
+  if (auth.currentUser) {
     try {
       await deleteDoc(doc(firestoreDb, 'bookings', id));
     } catch (error) {
@@ -359,7 +355,7 @@ export async function seedBookings(items: Booking[]): Promise<void> {
     } catch {
       // ignore
     }
-    if (auth?.currentUser && firestoreDb) {
+    if (auth.currentUser) {
       try {
         await setDoc(doc(firestoreDb, 'bookings', item.id), stripUndefined({ ...item }));
       } catch {
@@ -371,7 +367,7 @@ export async function seedBookings(items: Booking[]): Promise<void> {
 
 // ----------------- INQUIRIES -----------------
 export async function getInquiries(): Promise<Inquiry[]> {
-  if (auth?.currentUser && firestoreDb) {
+  if (auth.currentUser) {
     try {
       const snap = await getDocs(collection(firestoreDb, 'inquiries'));
       const items = snap.docs.map((d) => ({ ...d.data(), id: d.id } as Inquiry));
@@ -400,12 +396,10 @@ export async function addInquiry(inquiry: Inquiry): Promise<Inquiry> {
     saveLocalStorageFallback('fzn_inquiries', [inquiry, ...existing]);
   }
 
-  if (firestoreDb) {
-    try {
-      await setDoc(doc(firestoreDb, 'inquiries', inquiry.id), stripUndefined({ ...inquiry }));
-    } catch (error) {
-      handleFirestoreError(error, OperationType.WRITE, `inquiries/${inquiry.id}`);
-    }
+  try {
+    await setDoc(doc(firestoreDb, 'inquiries', inquiry.id), stripUndefined({ ...inquiry }));
+  } catch (error) {
+    handleFirestoreError(error, OperationType.WRITE, `inquiries/${inquiry.id}`);
   }
 
   notifyDataChanged('inquiries');
@@ -429,7 +423,7 @@ export async function deleteInquiry(id: string): Promise<void> {
     saveLocalStorageFallback('fzn_inquiries', list.filter((q) => q.id !== id));
   }
 
-  if (auth?.currentUser && firestoreDb) {
+  if (auth.currentUser) {
     try {
       await deleteDoc(doc(firestoreDb, 'inquiries', id));
     } catch (error) {
@@ -442,21 +436,19 @@ export async function deleteInquiry(id: string): Promise<void> {
 
 // ----------------- SERVICES / PRICING -----------------
 export async function getServices(): Promise<NailService[]> {
-  if (firestoreDb) {
-    try {
-      const snap = await getDocs(collection(firestoreDb, 'services'));
-      let items = snap.docs.map((d) => ({ ...d.data(), id: d.id } as NailService));
-      if (items.length === 0) {
-        if (auth?.currentUser) {
-          await seedServices(INITIAL_SERVICES);
-        }
-        items = INITIAL_SERVICES;
+  try {
+    const snap = await getDocs(collection(firestoreDb, 'services'));
+    let items = snap.docs.map((d) => ({ ...d.data(), id: d.id } as NailService));
+    if (items.length === 0) {
+      if (auth.currentUser) {
+        await seedServices(INITIAL_SERVICES);
       }
-      saveLocalStorageFallback('fzn_services', items);
-      return items;
-    } catch (error) {
-      console.warn('Firestore services read fallback:', error);
+      items = INITIAL_SERVICES;
     }
+    saveLocalStorageFallback('fzn_services', items);
+    return items;
+  } catch (error) {
+    console.warn('Firestore services read fallback:', error);
   }
 
   try {
@@ -481,7 +473,7 @@ export async function saveService(service: NailService): Promise<void> {
     saveLocalStorageFallback('fzn_services', [...updated, service]);
   }
 
-  if (auth?.currentUser && firestoreDb) {
+  if (auth.currentUser) {
     try {
       await setDoc(doc(firestoreDb, 'services', service.id), stripUndefined({ ...service }));
     } catch (error) {
@@ -500,7 +492,7 @@ export async function deleteService(id: string): Promise<void> {
     saveLocalStorageFallback('fzn_services', list.filter((s) => s.id !== id));
   }
 
-  if (auth?.currentUser && firestoreDb) {
+  if (auth.currentUser) {
     try {
       await deleteDoc(doc(firestoreDb, 'services', id));
     } catch (error) {
@@ -518,7 +510,7 @@ export async function seedServices(services: NailService[]): Promise<void> {
     } catch {
       // ignore
     }
-    if (auth?.currentUser && firestoreDb) {
+    if (auth.currentUser) {
       try {
         await setDoc(doc(firestoreDb, 'services', service.id), stripUndefined({ ...service }));
       } catch {
@@ -530,32 +522,30 @@ export async function seedServices(services: NailService[]): Promise<void> {
 
 // ----------------- GALLERY -----------------
 export async function getGallery(): Promise<GalleryItem[]> {
-  if (firestoreDb) {
-    try {
-      const snap = await getDocs(collection(firestoreDb, 'gallery'));
-      let items = snap.docs.map((d) => ({ ...d.data(), id: d.id } as GalleryItem));
-      if (items.length === 0) {
-        let localItems: GalleryItem[] = [];
-        try {
-          localItems = await idbGetAll<GalleryItem>('gallery');
-        } catch {
-          localItems = getLocalStorageFallback<GalleryItem>('fzn_gallery', INITIAL_GALLERY);
-        }
-        const toSeed = localItems.length > 0 ? localItems : INITIAL_GALLERY;
-        if (auth?.currentUser && toSeed.length > 0) {
-          await seedGallery(toSeed);
-        }
-        items = toSeed;
+  try {
+    const snap = await getDocs(collection(firestoreDb, 'gallery'));
+    let items = snap.docs.map((d) => ({ ...d.data(), id: d.id } as GalleryItem));
+    if (items.length === 0) {
+      let localItems: GalleryItem[] = [];
+      try {
+        localItems = await idbGetAll<GalleryItem>('gallery');
+      } catch {
+        localItems = getLocalStorageFallback<GalleryItem>('fzn_gallery', INITIAL_GALLERY);
       }
-      items = items.map((item) => ({
-        ...item,
-        imageUrl: resolveImageUrl(item.imageUrl),
-      }));
-      saveLocalStorageFallback('fzn_gallery', items);
-      return items;
-    } catch (error) {
-      console.warn('Firestore gallery read fallback:', error);
+      const toSeed = localItems.length > 0 ? localItems : INITIAL_GALLERY;
+      if (auth.currentUser && toSeed.length > 0) {
+        await seedGallery(toSeed);
+      }
+      items = toSeed;
     }
+    items = items.map((item) => ({
+      ...item,
+      imageUrl: resolveImageUrl(item.imageUrl),
+    }));
+    saveLocalStorageFallback('fzn_gallery', items);
+    return items;
+  } catch (error) {
+    console.warn('Firestore gallery read fallback:', error);
   }
 
   try {
@@ -586,7 +576,7 @@ export async function saveGalleryItem(item: GalleryItem): Promise<void> {
     saveLocalStorageFallback('fzn_gallery', [...updated, item]);
   }
 
-  if (auth?.currentUser && firestoreDb) {
+  if (auth.currentUser) {
     try {
       await setDoc(doc(firestoreDb, 'gallery', item.id), stripUndefined({ ...item }));
     } catch (error) {
@@ -605,7 +595,7 @@ export async function deleteGalleryItem(id: string): Promise<void> {
     saveLocalStorageFallback('fzn_gallery', list.filter((g) => g.id !== id));
   }
 
-  if (auth?.currentUser && firestoreDb) {
+  if (auth.currentUser) {
     try {
       await deleteDoc(doc(firestoreDb, 'gallery', id));
     } catch (error) {
@@ -623,7 +613,7 @@ export async function seedGallery(items: GalleryItem[]): Promise<void> {
     } catch {
       // ignore
     }
-    if (auth?.currentUser && firestoreDb) {
+    if (auth.currentUser) {
       try {
         await setDoc(doc(firestoreDb, 'gallery', item.id), stripUndefined({ ...item }));
       } catch {
@@ -635,7 +625,7 @@ export async function seedGallery(items: GalleryItem[]): Promise<void> {
 
 // ----------------- CUSTOMERS -----------------
 export async function getCustomers(): Promise<Customer[]> {
-  if (auth?.currentUser && firestoreDb) {
+  if (auth.currentUser) {
     try {
       const snap = await getDocs(collection(firestoreDb, 'customers'));
       let items = snap.docs.map((d) => ({ ...d.data(), id: d.id } as Customer));
@@ -666,7 +656,7 @@ export async function saveCustomer(customer: Customer): Promise<void> {
     saveLocalStorageFallback('fzn_customers', [...updated, customer]);
   }
 
-  if (auth?.currentUser && firestoreDb) {
+  if (auth.currentUser) {
     try {
       await setDoc(doc(firestoreDb, 'customers', customer.id), stripUndefined({ ...customer }));
     } catch (error) {
@@ -685,7 +675,7 @@ export async function deleteCustomer(id: string): Promise<void> {
     saveLocalStorageFallback('fzn_customers', list.filter((c) => c.id !== id));
   }
 
-  if (auth?.currentUser && firestoreDb) {
+  if (auth.currentUser) {
     try {
       await deleteDoc(doc(firestoreDb, 'customers', id));
     } catch (error) {
@@ -703,7 +693,7 @@ export async function seedCustomers(items: Customer[]): Promise<void> {
     } catch {
       // ignore
     }
-    if (auth?.currentUser && firestoreDb) {
+    if (auth.currentUser) {
       try {
         await setDoc(doc(firestoreDb, 'customers', item.id), stripUndefined({ ...item }));
       } catch {
@@ -715,7 +705,7 @@ export async function seedCustomers(items: Customer[]): Promise<void> {
 
 // ----------------- INVOICES -----------------
 export async function getInvoices(): Promise<Invoice[]> {
-  if (auth?.currentUser && firestoreDb) {
+  if (auth.currentUser) {
     try {
       const snap = await getDocs(collection(firestoreDb, 'invoices'));
       let items = snap.docs.map((d) => ({ ...d.data(), id: d.id } as Invoice));
@@ -746,7 +736,7 @@ export async function saveInvoice(invoice: Invoice): Promise<void> {
     saveLocalStorageFallback('fzn_invoices', [...updated, invoice]);
   }
 
-  if (auth?.currentUser && firestoreDb) {
+  if (auth.currentUser) {
     try {
       await setDoc(doc(firestoreDb, 'invoices', invoice.id), stripUndefined({ ...invoice }));
     } catch (error) {
@@ -765,7 +755,7 @@ export async function deleteInvoice(id: string): Promise<void> {
     saveLocalStorageFallback('fzn_invoices', list.filter((i) => i.id !== id));
   }
 
-  if (auth?.currentUser && firestoreDb) {
+  if (auth.currentUser) {
     try {
       await deleteDoc(doc(firestoreDb, 'invoices', id));
     } catch (error) {
@@ -783,7 +773,7 @@ export async function seedInvoices(items: Invoice[]): Promise<void> {
     } catch {
       // ignore
     }
-    if (auth?.currentUser && firestoreDb) {
+    if (auth.currentUser) {
       try {
         await setDoc(doc(firestoreDb, 'invoices', item.id), stripUndefined({ ...item }));
       } catch {
@@ -795,15 +785,13 @@ export async function seedInvoices(items: Invoice[]): Promise<void> {
 
 // ----------------- REVIEWS -----------------
 export async function getReviews(): Promise<Review[]> {
-  if (firestoreDb) {
-    try {
-      const snap = await getDocs(collection(firestoreDb, 'reviews'));
-      const items = snap.docs.map((d) => ({ ...d.data(), id: d.id } as Review));
-      saveLocalStorageFallback('fzn_reviews', items);
-      return items;
-    } catch (error) {
-      console.warn('Firestore reviews read fallback:', error);
-    }
+  try {
+    const snap = await getDocs(collection(firestoreDb, 'reviews'));
+    const items = snap.docs.map((d) => ({ ...d.data(), id: d.id } as Review));
+    saveLocalStorageFallback('fzn_reviews', items);
+    return items;
+  } catch (error) {
+    console.warn('Firestore reviews read fallback:', error);
   }
 
   try {
@@ -821,12 +809,10 @@ export async function addReview(review: Review): Promise<void> {
     saveLocalStorageFallback('fzn_reviews', [review, ...existing]);
   }
 
-  if (firestoreDb) {
-    try {
-      await setDoc(doc(firestoreDb, 'reviews', review.id), stripUndefined({ ...review }));
-    } catch (error) {
-      handleFirestoreError(error, OperationType.WRITE, `reviews/${review.id}`);
-    }
+  try {
+    await setDoc(doc(firestoreDb, 'reviews', review.id), stripUndefined({ ...review }));
+  } catch (error) {
+    handleFirestoreError(error, OperationType.WRITE, `reviews/${review.id}`);
   }
 
   notifyDataChanged('reviews');
@@ -896,7 +882,7 @@ export async function exportAllData() {
 }
 
 export async function clearAllDataAndResetApp(): Promise<void> {
-  if (auth?.currentUser && firestoreDb) {
+  if (auth.currentUser) {
     const collectionsToClear = ['bookings', 'inquiries', 'services', 'gallery', 'reviews', 'customers', 'invoices'];
     for (const colName of collectionsToClear) {
       try {

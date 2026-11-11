@@ -234,7 +234,7 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
   const resolveOwnerEmail = (s: BusinessSettings) =>
     s.ownerEmail && s.ownerEmail !== 'owner@fazzynails.com'
       ? s.ownerEmail
-      : auth?.currentUser?.email || s.ownerEmail;
+      : auth.currentUser?.email || s.ownerEmail;
 
   const [editSettings, setEditSettings] = useState<BusinessSettings>({
     ...settings,
@@ -504,7 +504,7 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
 
   const handleSaveSettings = async (e: React.FormEvent) => {
     e.preventDefault();
-    const currentUser = auth?.currentUser;
+    const currentUser = auth.currentUser;
     const nextEmail = (editSettings.ownerEmail || '').trim();
     const nextPassword = editSettings.ownerPassword || '';
     let emailVerificationPending = false;
@@ -1906,7 +1906,7 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
                         <label className="block font-semibold mb-1">Owner Admin Email</label>
                         <input
                           type="email"
-                          value={editSettings.ownerEmail ?? auth?.currentUser?.email ?? ''}
+                          value={editSettings.ownerEmail ?? auth.currentUser?.email ?? ''}
                           onChange={(e) => setEditSettings({ ...editSettings, ownerEmail: e.target.value })}
                           className="w-full px-3.5 py-2.5 bg-[#F8F3EC] border border-[#E8D8C7] rounded-xl text-[#30231F]"
                         />
