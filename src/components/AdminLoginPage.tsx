@@ -75,7 +75,7 @@ export const AdminLoginPage: React.FC<AdminLoginPageProps> = ({
     const mode = params.get('mode');
     const oobCode = params.get('oobCode');
 
-    if (mode === 'resetPassword' && oobCode) {
+    if (mode === 'resetPassword' && oobCode && auth) {
       setIsForgotMode(true);
       verifyPasswordResetCode(auth, oobCode)
         .then((verifiedEmail) => {
@@ -95,6 +95,11 @@ export const AdminLoginPage: React.FC<AdminLoginPageProps> = ({
 
     if (!email.trim() || !password) {
       setErrorMsg('Please enter both your email address and password.');
+      return;
+    }
+
+    if (!auth) {
+      setErrorMsg('Firebase Authentication is not configured. Please add VITE_FIREBASE_* environment variables.');
       return;
     }
 
@@ -132,6 +137,11 @@ export const AdminLoginPage: React.FC<AdminLoginPageProps> = ({
       return;
     }
 
+    if (!auth) {
+      setErrorMsg('Firebase Authentication is not configured.');
+      return;
+    }
+
     setIsLoading(true);
     try {
       const targetEmail = recoveryEmail.trim();
@@ -166,7 +176,7 @@ export const AdminLoginPage: React.FC<AdminLoginPageProps> = ({
     e.preventDefault();
     setErrorMsg('');
 
-    if (!resetOobCode) return;
+    if (!resetOobCode || !auth) return;
     if (newResetPassword.length < 6) {
       setErrorMsg('New password must be at least 6 characters long.');
       return;
