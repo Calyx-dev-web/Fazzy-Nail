@@ -240,7 +240,7 @@ export async function saveBusinessSettings(settings: BusinessSettings): Promise<
       const { ownerPassword: _omitted, ...publicSafeSettings } = settings;
       await setDoc(doc(firestoreDb, 'settings', 'main'), stripUndefined(publicSafeSettings));
     } catch (error) {
-      handleFirestoreError(error, OperationType.WRITE, 'settings/main');
+      console.warn('Firestore settings sync skipped/denied:', error);
     }
   }
 

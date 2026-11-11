@@ -1,8 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Lock, Mail, Eye, EyeOff, Sparkles, CheckCircle2, ArrowRight, Heart } from 'lucide-react';
 import {
   signInWithEmailAndPassword,
   sendPasswordResetEmail,
+  verifyPasswordResetCode,
+  confirmPasswordReset,
   setPersistence,
   browserLocalPersistence,
   browserSessionPersistence,
@@ -61,6 +63,32 @@ export const AdminLoginPage: React.FC<AdminLoginPageProps> = ({
   const [recoveryEmail, setRecoveryEmail] = useState('');
   const [recoverySent, setRecoverySent] = useState(false);
 
+  // In-app password reset (when returning from email reset link with oobCode)
+  const [resetOobCode, setResetOobCode] = useState<string | null>(null);
+  const [resetAccountEmail, setResetAccountEmail] = useState('');
+  const [newResetPassword, setNewResetPassword] = useState('');
+  const [confirmResetPassword, setConfirmResetPassword] = useState('');
+  const [resetCompleted, setResetCompleted] = useState(false);
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const mode = params.get('mode');
+    const oobCode = params.get('oobCode');
+
+    if (mode === 'resetPassword' && oobCode) {
+      setIsForgotMode(true);
+      verifyPasswordResetCode(auth, oobCode)
+        .then((verifiedEmail) => {
+          setResetOobCode(oobCode);
+          setResetAccountEmail(verifiedEmail);
+          setEmail(verifiedEmail);
+        })
+        .catch(() => {
+          setErrorMsg('This password reset link is invalid or has expired. Please request a new one.');
+        });
+    }
+  }, []);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setErrorMsg('');
@@ -106,9 +134,68 @@ export const AdminLoginPage: React.FC<AdminLoginPageProps> = ({
 
     setIsLoading(true);
     try {
-      await sendPasswordResetEmail(auth, recoveryEmail.trim());
+      const targetEmail = recoveryEmail.trim();
+      try {
+        await sendPasswordResetEmail(auth, targetEmail, {
+          url: `${window.location.origin}/Admin`,
+        });
+      } catch {
+        await sendPasswordResetEmail(auth, targetEmail);
+      }
+
+      try {
+        const currentSettings = await getBusinessSettings();
+        await saveBusinessSettings({
+          ...currentSettings,
+          ownerEmail: targetEmail,
+        });
+      } catch {
+        // Non-fatal
+      }
+
+      setEmail(targetEmail);
       setIsLoading(false);
       setRecoverySent(true);
+    } catch (err: any) {
+      setIsLoading(false);
+      setErrorMsg(mapFirebaseAuthError(err?.code || ''));
+    }
+  };
+
+  const handleConfirmPasswordReset = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setErrorMsg('');
+
+    if (!resetOobCode) return;
+    if (newResetPassword.length < 6) {
+      setErrorMsg('New password must be at least 6 characters long.');
+      return;
+    }
+    if (newResetPassword !== confirmResetPassword) {
+      setErrorMsg('Passwords do not match.');
+      return;
+    }
+
+    setIsLoading(true);
+    try {
+      await confirmPasswordReset(auth, resetOobCode, newResetPassword);
+
+      try {
+        const currentSettings = await getBusinessSettings();
+        await saveBusinessSettings({
+          ...currentSettings,
+          ownerEmail: resetAccountEmail || currentSettings.ownerEmail,
+          ownerPassword: newResetPassword,
+        });
+      } catch {
+        // Non-fatal
+      }
+
+      setEmail(resetAccountEmail);
+      setPassword(newResetPassword);
+      setIsLoading(false);
+      setResetCompleted(true);
+      window.history.replaceState({}, '', '/Admin');
     } catch (err: any) {
       setIsLoading(false);
       setErrorMsg(mapFirebaseAuthError(err?.code || ''));
@@ -170,8 +257,87 @@ export const AdminLoginPage: React.FC<AdminLoginPageProps> = ({
           )}
 
           {isForgotMode ? (
-            /* PASSWORD RECOVERY FORM */
-            recoverySent ? (
+            /* PASSWORD RECOVERY / IN-APP RESET FORM */
+            resetCompleted ? (
+              <div className="space-y-6 text-center">
+                <div className="w-12 h-12 mx-auto rounded-full bg-emerald-100 border border-emerald-200 flex items-center justify-center text-emerald-700">
+                  <CheckCircle2 className="w-6 h-6" />
+                </div>
+                <div className="space-y-2">
+                  <h3 className="font-editorial text-xl font-bold text-[#30231F]">
+                    Password Updated
+                  </h3>
+                  <p className="text-xs text-[#88766F] leading-relaxed">
+                    Your password for <strong>{resetAccountEmail}</strong> has been updated and synced to your Admin Settings.
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setIsForgotMode(false);
+                    setResetCompleted(false);
+                    setResetOobCode(null);
+                    setErrorMsg('');
+                  }}
+                  className="w-full py-3 bg-[#30231F] hover:bg-[#B88746] text-[#FFFCF8] text-xs font-semibold rounded-2xl transition-all cursor-pointer shadow-sm"
+                >
+                  Continue to Owner Login
+                </button>
+              </div>
+            ) : resetOobCode ? (
+              <form onSubmit={handleConfirmPasswordReset} className="space-y-5">
+                <div>
+                  <label className="block text-xs font-semibold uppercase tracking-wider text-[#30231F] mb-2">
+                    Owner Email Address
+                  </label>
+                  <input
+                    type="email"
+                    disabled
+                    value={resetAccountEmail}
+                    className="w-full px-4 py-3 bg-[#F8F3EC]/70 border border-[#E8D8C7] rounded-2xl text-xs text-[#88766F]"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold uppercase tracking-wider text-[#30231F] mb-2">
+                    New Password
+                  </label>
+                  <div className="relative">
+                    <Lock className="w-4 h-4 text-[#88766F] absolute left-3.5 top-3.5" />
+                    <input
+                      type={showPassword ? 'text' : 'password'}
+                      required
+                      placeholder="At least 6 characters"
+                      value={newResetPassword}
+                      onChange={(e) => setNewResetPassword(e.target.value)}
+                      className="w-full pl-10 pr-4 py-3 bg-[#F8F3EC] border border-[#E8D8C7] rounded-2xl text-xs text-[#30231F] focus:outline-none focus:ring-2 focus:ring-[#B88746] font-mono"
+                    />
+                  </div>
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold uppercase tracking-wider text-[#30231F] mb-2">
+                    Confirm New Password
+                  </label>
+                  <div className="relative">
+                    <Lock className="w-4 h-4 text-[#88766F] absolute left-3.5 top-3.5" />
+                    <input
+                      type={showPassword ? 'text' : 'password'}
+                      required
+                      placeholder="Re-enter new password"
+                      value={confirmResetPassword}
+                      onChange={(e) => setConfirmResetPassword(e.target.value)}
+                      className="w-full pl-10 pr-4 py-3 bg-[#F8F3EC] border border-[#E8D8C7] rounded-2xl text-xs text-[#30231F] focus:outline-none focus:ring-2 focus:ring-[#B88746] font-mono"
+                    />
+                  </div>
+                </div>
+                <button
+                  type="submit"
+                  disabled={isLoading}
+                  className="w-full py-3.5 bg-[#B88746] hover:bg-[#30231F] text-[#FFFCF8] text-xs font-semibold rounded-2xl transition-colors cursor-pointer shadow-sm disabled:opacity-50"
+                >
+                  {isLoading ? 'Updating Password...' : 'Save New Password'}
+                </button>
+              </form>
+            ) : recoverySent ? (
               <div className="space-y-6 text-center">
                 <div className="w-12 h-12 mx-auto rounded-full bg-emerald-100 border border-emerald-200 flex items-center justify-center text-emerald-700">
                   <CheckCircle2 className="w-6 h-6" />

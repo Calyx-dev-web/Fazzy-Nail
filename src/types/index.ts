@@ -118,7 +118,7 @@ export const DEFAULT_BUSINESS_SETTINGS: BusinessSettings = {
   ownerName: 'Favour Okeke',
   ownerEmail: 'owner@fazzynails.com',
   ownerPassword: 'admin',
-  motto: 'Pretty Nails ✦ Greater You',
+  motto: 'Nails that speak class',
   phone: '+234 907 281 7540',
   phoneClean: '+2349072817540',
   whatsappRaw: '2349072817540',

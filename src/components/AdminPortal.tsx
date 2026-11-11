@@ -231,15 +231,20 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
   }, [selectedCustomer]);
 
   // Business Settings Edit state
+  const resolveOwnerEmail = (s: BusinessSettings) =>
+    s.ownerEmail && s.ownerEmail !== 'owner@fazzynails.com'
+      ? s.ownerEmail
+      : auth.currentUser?.email || s.ownerEmail;
+
   const [editSettings, setEditSettings] = useState<BusinessSettings>({
     ...settings,
-    ownerEmail: auth.currentUser?.email || settings.ownerEmail,
+    ownerEmail: resolveOwnerEmail(settings),
   });
 
   useEffect(() => {
     setEditSettings({
       ...settings,
-      ownerEmail: auth.currentUser?.email || settings.ownerEmail,
+      ownerEmail: resolveOwnerEmail(settings),
     });
   }, [settings]);
 
@@ -495,12 +500,14 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
     const nextEmail = (editSettings.ownerEmail || '').trim();
     const nextPassword = editSettings.ownerPassword || '';
     let emailVerificationPending = false;
+    let credentialWarning: string | null = null;
 
     if (currentUser) {
       try {
         if (nextEmail && nextEmail !== currentUser.email) {
           try {
             await updateEmail(currentUser, nextEmail);
+            await currentUser.reload();
           } catch (emailErr: any) {
             if (emailErr?.code === 'auth/operation-not-allowed') {
               await verifyBeforeUpdateEmail(currentUser, nextEmail);
@@ -517,32 +524,37 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
       } catch (err: any) {
         const code = err?.code || '';
         if (code === 'auth/requires-recent-login') {
-          showToast('For security, please log out and log back in before changing your login email or password.');
+          credentialWarning = 'Settings saved, but please log out and log back in before changing your login email or password.';
         } else if (code === 'auth/weak-password') {
-          showToast('New password must be at least 6 characters long.');
+          credentialWarning = 'Settings saved, but the new password must be at least 6 characters long.';
         } else if (code === 'auth/invalid-email') {
-          showToast('Please enter a valid Owner Admin Email address.');
+          credentialWarning = 'Settings saved, but the Owner Admin Email address is invalid.';
         } else if (code === 'auth/email-already-in-use') {
-          showToast('That email address is already in use by another account.');
+          credentialWarning = 'Settings saved, but that email address is already in use by another account.';
         } else {
-          showToast('Could not update login credentials. Please try again.');
+          credentialWarning = 'Settings saved, but login credentials could not be updated right now.';
         }
-        return;
       }
     }
 
-    await saveBusinessSettings({
-      ...editSettings,
-      ownerEmail: nextEmail || editSettings.ownerEmail,
-      ownerPassword: nextPassword,
-    });
+    try {
+      await saveBusinessSettings({
+        ...editSettings,
+        ownerEmail: nextEmail || editSettings.ownerEmail,
+        ownerPassword: nextPassword,
+      });
 
-    if (emailVerificationPending) {
-      showToast(`Settings saved! Check ${nextEmail} to confirm your new admin email.`);
-    } else {
-      showToast('Fazzy Nails business settings & login credentials updated!');
+      if (credentialWarning) {
+        showToast(credentialWarning);
+      } else if (emailVerificationPending) {
+        showToast(`Settings saved! Check ${nextEmail} to verify your new admin email.`);
+      } else {
+        showToast('Fazzy Nails business settings & login credentials updated!');
+      }
+      onRefreshData();
+    } catch {
+      showToast('Failed to save settings. Please try again.');
     }
-    onRefreshData();
   };
 
   const handleImageFileUpload = (
