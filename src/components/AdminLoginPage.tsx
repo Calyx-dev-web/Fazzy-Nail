@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Shield, Lock, Mail, Eye, EyeOff, Sparkles, CheckCircle2, ArrowRight, Heart } from 'lucide-react';
 import { IMAGES } from '../assets/images';
-import { getBusinessSettings } from '../services/db';
+import { getBusinessSettings, resetAdminCredentials } from '../services/db';
 
 interface AdminLoginPageProps {
   onLoginSuccess: () => void;
@@ -65,9 +65,11 @@ export const AdminLoginPage: React.FC<AdminLoginPageProps> = ({
     }
   };
 
-  const handlePasswordRecovery = (e: React.FormEvent) => {
+  const handlePasswordRecovery = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!recoveryEmail.trim()) return;
+    await resetAdminCredentials();
+    setEmail('owner@fazzynails.com');
+    setPassword('');
     setRecoverySent(true);
   };
 
@@ -110,11 +112,11 @@ export const AdminLoginPage: React.FC<AdminLoginPageProps> = ({
             </div>
 
             <h1 className="font-editorial text-3xl font-bold text-[#30231F] tracking-tight">
-              {isForgotMode ? 'Password Recovery' : 'Welcome Back'}
+              {isForgotMode ? 'Reset Login Details' : 'Welcome Back'}
             </h1>
             <p className="text-xs text-[#88766F] font-medium">
               {isForgotMode
-                ? 'Enter your owner email to receive a password reset link'
+                ? 'Reset your owner login credentials back to default'
                 : 'Your beauty business, beautifully managed.'}
             </p>
           </div>
@@ -134,11 +136,15 @@ export const AdminLoginPage: React.FC<AdminLoginPageProps> = ({
                 </div>
                 <div className="space-y-2">
                   <h3 className="font-editorial text-xl font-bold text-[#30231F]">
-                    Recovery Email Sent
+                    Login Details Reset
                   </h3>
                   <p className="text-xs text-[#88766F] leading-relaxed">
-                    We sent password reset instructions to <strong>{recoveryEmail}</strong>. Check your inbox to set a new password.
+                    Your admin login has been reset to the default credentials:
                   </p>
+                  <div className="p-3 bg-[#F8F3EC] border border-[#E8D8C7] rounded-2xl text-xs font-mono text-[#30231F] space-y-1">
+                    <div>Email: <strong>owner@fazzynails.com</strong></div>
+                    <div>Password: <strong>admin</strong></div>
+                  </div>
                 </div>
                 <button
                   type="button"
@@ -161,7 +167,6 @@ export const AdminLoginPage: React.FC<AdminLoginPageProps> = ({
                     <Mail className="w-4 h-4 text-[#88766F] absolute left-3.5 top-3.5" />
                     <input
                       type="email"
-                      required
                       placeholder="owner@fazzynails.com"
                       value={recoveryEmail}
                       onChange={(e) => setRecoveryEmail(e.target.value)}
@@ -182,7 +187,7 @@ export const AdminLoginPage: React.FC<AdminLoginPageProps> = ({
                     type="submit"
                     className="flex-1 py-3.5 bg-[#B88746] hover:bg-[#30231F] text-[#FFFCF8] text-xs font-semibold rounded-2xl transition-colors cursor-pointer shadow-sm"
                   >
-                    Send Reset Link
+                    Reset to Default
                   </button>
                 </div>
               </form>

@@ -117,7 +117,24 @@ export async function saveBusinessSettings(settings: BusinessSettings): Promise<
   } catch {
     saveLocalStorageFallbackSingle('fzn_settings', settings);
   }
+  saveLocalStorageFallbackSingle('fzn_settings', settings);
   notifyDataChanged('settings');
+}
+
+export async function resetAdminCredentials(): Promise<BusinessSettings> {
+  const current = await getBusinessSettings();
+  const updated: BusinessSettings = {
+    ...current,
+    ownerEmail: DEFAULT_BUSINESS_SETTINGS.ownerEmail,
+    ownerPassword: DEFAULT_BUSINESS_SETTINGS.ownerPassword,
+  };
+  await saveBusinessSettings(updated);
+  if (typeof window !== 'undefined') {
+    sessionStorage.removeItem('fzn_owner_auth');
+    sessionStorage.removeItem('fzn_owner_email');
+    localStorage.removeItem('fzn_owner_auth_remember');
+  }
+  return updated;
 }
 
 // ----------------- BOOKINGS -----------------
