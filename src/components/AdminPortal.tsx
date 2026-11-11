@@ -1822,6 +1822,42 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
                           </label>
                         </div>
                       </div>
+
+                      <div className="sm:col-span-2">
+                        <label className="block font-semibold mb-1">About Fazzynails Image (File or URL)</label>
+                        <div className="flex items-center gap-2">
+                          <img
+                            src={resolveImageUrl(editSettings.aboutImage || IMAGES.studio)}
+                            alt="About Fazzynails preview"
+                            className="w-10 h-10 rounded-xl object-cover border border-[#B88746] shrink-0 bg-[#F8F3EC]"
+                          />
+                          <input
+                            type="text"
+                            placeholder="Paste image URL or upload"
+                            value={editSettings.aboutImage || ''}
+                            onChange={(e) => setEditSettings({ ...editSettings, aboutImage: e.target.value })}
+                            className="flex-1 px-3.5 py-2.5 bg-[#F8F3EC] border border-[#E8D8C7] rounded-xl text-[#30231F] text-xs font-mono min-w-0"
+                          />
+                          <label className="px-3 py-2.5 bg-[#30231F] hover:bg-[#B88746] text-white text-xs rounded-xl cursor-pointer shrink-0 flex items-center gap-1 transition-colors">
+                            <Upload className="w-3.5 h-3.5" />
+                            <span>Upload</span>
+                            <input
+                              type="file"
+                              accept="image/*"
+                              className="hidden"
+                              onChange={(e) =>
+                                handleImageFileUpload(e, async (url) => {
+                                  const updated = { ...editSettings, aboutImage: url };
+                                  setEditSettings(updated);
+                                  await saveBusinessSettings(updated);
+                                  showToast('About Fazzynails image updated!');
+                                  onRefreshData();
+                                })
+                              }
+                            />
+                          </label>
+                        </div>
+                      </div>
                     </div>
                   </div>
 

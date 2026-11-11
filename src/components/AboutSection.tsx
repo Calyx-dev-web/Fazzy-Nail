@@ -1,9 +1,13 @@
 import React from 'react';
-import { BUSINESS_INFO, getWhatsAppUrl } from '../types';
-import { IMAGES } from '../assets/images';
+import { getWhatsAppUrl } from '../types';
+import { IMAGES, resolveImageUrl } from '../assets/images';
 import { Sparkles, ShieldCheck, Heart, Award, MessageSquare } from 'lucide-react';
 
-export const AboutSection: React.FC = () => {
+interface AboutSectionProps {
+  aboutImage?: string;
+}
+
+export const AboutSection: React.FC<AboutSectionProps> = ({ aboutImage }) => {
   return (
     <section id="about" className="py-16 sm:py-24 bg-[#FAF8F5] border-b border-stone-200">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -12,7 +16,7 @@ export const AboutSection: React.FC = () => {
           <div className="lg:col-span-5 order-2 lg:order-1">
             <div className="relative rounded-3xl overflow-hidden border border-stone-200 shadow-xl bg-white aspect-[4/3] sm:aspect-square">
               <img
-                src={IMAGES.studio}
+                src={resolveImageUrl(aboutImage || IMAGES.studio)}
                 alt="Fazzynails studio interior and clean sanitation station"
                 referrerPolicy="no-referrer"
                 className="w-full h-full object-cover"

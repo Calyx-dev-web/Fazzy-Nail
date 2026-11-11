@@ -212,6 +212,9 @@ export async function getBusinessSettings(): Promise<BusinessSettings> {
         ...remote,
         ownerPassword: localSettings.ownerPassword || DEFAULT_BUSINESS_SETTINGS.ownerPassword,
       };
+      if (merged.ownerName === 'Favour Okeke') {
+        merged.ownerName = DEFAULT_BUSINESS_SETTINGS.ownerName;
+      }
       try {
         await idbPut('settings', { ...merged, id: 'main' });
       } catch {
@@ -224,6 +227,10 @@ export async function getBusinessSettings(): Promise<BusinessSettings> {
     console.warn('Firestore settings read fallback:', error);
   }
 
+  if (localSettings.ownerName === 'Favour Okeke') {
+    localSettings = { ...localSettings, ownerName: DEFAULT_BUSINESS_SETTINGS.ownerName };
+    saveLocalStorageFallbackSingle('fzn_settings', localSettings);
+  }
   return localSettings;
 }
 

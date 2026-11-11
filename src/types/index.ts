@@ -108,6 +108,7 @@ export interface BusinessSettings {
   hours: string;
   logoUrl: string;
   profileImage: string;
+  aboutImage?: string;
   heroTitle: string;
   heroSubtitle: string;
   announcement: string;
@@ -115,7 +116,7 @@ export interface BusinessSettings {
 
 export const DEFAULT_BUSINESS_SETTINGS: BusinessSettings = {
   name: 'Fazzy Nails',
-  ownerName: 'Favour Okeke',
+  ownerName: 'Studio Owner',
   ownerEmail: 'owner@fazzynails.com',
   ownerPassword: 'admin',
   motto: 'Nails that speak class',
@@ -129,6 +130,7 @@ export const DEFAULT_BUSINESS_SETTINGS: BusinessSettings = {
   hours: 'Mon–Sat: 9:00 AM – 7:00 PM | Sun: 1:00 PM – 6:00 PM',
   logoUrl: '/assets/aistudio/IMG_20261111_015106_390_dbe186d0.jpg',
   profileImage: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&w=400&q=80',
+  aboutImage: '',
   heroTitle: 'Where Elegance Meets Perfection.',
   heroSubtitle: 'Step into a sanctuary of tailored luxury. From immaculate Gel Polish to long-wearing Sculpted Acrylics, every set is crafted with medical-grade hygiene and high-fashion finesse.',
   announcement: 'Same-Day Slots Available: Mon–Sat 9AM–7PM · Sunday 1PM–6PM',

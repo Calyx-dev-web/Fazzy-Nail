@@ -254,7 +254,7 @@ export default function App() {
         />
 
         {/* 5. About Section */}
-        <AboutSection />
+        <AboutSection aboutImage={settings.aboutImage} />
 
         {/* 6. Blog Section */}
         <BlogSection />
