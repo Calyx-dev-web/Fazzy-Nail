@@ -359,12 +359,16 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
       featured: ngFeatured,
       createdAt: new Date().toISOString().split('T')[0],
     };
-    await saveGalleryItem(newG);
+    try {
+      await saveGalleryItem(newG);
+      showToast(`Nail work photo "${newG.title}" published to Firebase & gallery!`);
+    } catch {
+      showToast(`Photo "${newG.title}" saved locally, but Firebase Firestore rejected the write. Check your Firestore Rules.`);
+    }
     setActiveModal(null);
     setNgTitle('');
     setNgUrl('');
     setNgDesc('');
-    showToast(`Nail work photo "${newG.title}" published to gallery!`);
     onRefreshData();
   };
 
@@ -441,10 +445,14 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
       description: egDesc.trim(),
       featured: egFeatured,
     };
-    await saveGalleryItem(updated);
+    try {
+      await saveGalleryItem(updated);
+      showToast(`Gallery photo "${updated.title}" updated!`);
+    } catch {
+      showToast(`Photo "${updated.title}" updated locally, but Firebase Firestore rejected the write.`);
+    }
     setActiveModal(null);
     setSelectedGallery(null);
-    showToast(`Gallery photo "${updated.title}" updated!`);
     onRefreshData();
   };
 
@@ -565,9 +573,36 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
     if (!file) return;
     const reader = new FileReader();
     reader.onload = (event) => {
-      if (event.target?.result) {
-        setter(event.target.result as string);
-      }
+      const rawDataUrl = event.target?.result as string;
+      if (!rawDataUrl) return;
+
+      const img = new Image();
+      img.onload = () => {
+        const MAX_DIM = 1200;
+        let { width, height } = img;
+        if (width > MAX_DIM || height > MAX_DIM) {
+          if (width > height) {
+            height = Math.round((height * MAX_DIM) / width);
+            width = MAX_DIM;
+          } else {
+            width = Math.round((width * MAX_DIM) / height);
+            height = MAX_DIM;
+          }
+        }
+        const canvas = document.createElement('canvas');
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext('2d');
+        if (ctx) {
+          ctx.drawImage(img, 0, 0, width, height);
+          const compressed = canvas.toDataURL('image/jpeg', 0.8);
+          setter(compressed.length < rawDataUrl.length ? compressed : rawDataUrl);
+        } else {
+          setter(rawDataUrl);
+        }
+      };
+      img.onerror = () => setter(rawDataUrl);
+      img.src = rawDataUrl;
     };
     reader.readAsDataURL(file);
   };
