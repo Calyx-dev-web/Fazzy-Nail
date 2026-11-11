@@ -827,13 +827,32 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
                 <Download className="w-4 h-4 text-[#B88746]" />
               </button>
 
-              {/* Owner Avatar */}
+              {/* Owner Avatar (Click to upload new profile picture) */}
               <div className="flex items-center gap-2 pl-2 border-l border-[#E8D8C7]">
-                <img
-                  src={resolveImageUrl(settings.profileImage || IMAGES.logo)}
-                  alt={settings.ownerName}
-                  className="w-9 h-9 rounded-full object-cover border-2 border-[#B88746]"
-                />
+                <label
+                  className="relative group cursor-pointer block"
+                  title="Click to upload a new profile picture"
+                >
+                  <img
+                    src={resolveImageUrl(editSettings.profileImage || settings.profileImage || IMAGES.logo)}
+                    alt={settings.ownerName}
+                    className="w-9 h-9 rounded-full object-cover border-2 border-[#B88746] group-hover:opacity-80 transition-opacity"
+                  />
+                  <input
+                    type="file"
+                    accept="image/*"
+                    className="hidden"
+                    onChange={(e) =>
+                      handleImageFileUpload(e, async (url) => {
+                        const updated = { ...editSettings, profileImage: url };
+                        setEditSettings(updated);
+                        await saveBusinessSettings(updated);
+                        showToast('Admin profile image updated!');
+                        onRefreshData();
+                      })
+                    }
+                  />
+                </label>
               </div>
             </div>
           </header>
