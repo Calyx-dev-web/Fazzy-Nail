@@ -2,13 +2,13 @@ import React, { useState } from 'react';
 import { Lock, Mail, Eye, EyeOff, Sparkles, CheckCircle2, ArrowRight, Heart } from 'lucide-react';
 import {
   signInWithEmailAndPassword,
-  createUserWithEmailAndPassword,
   sendPasswordResetEmail,
   setPersistence,
   browserLocalPersistence,
   browserSessionPersistence,
 } from 'firebase/auth';
 import { auth } from '../firebase';
+import { getBusinessSettings, saveBusinessSettings } from '../services/db';
 import { IMAGES, resolveImageUrl } from '../assets/images';
 
 interface AdminLoginPageProps {
@@ -45,10 +45,8 @@ export const AdminLoginPage: React.FC<AdminLoginPageProps> = ({
 }) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [rememberMe, setRememberMe] = useState(true);
-  const [isSignUpMode, setIsSignUpMode] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
   const [isLoading, setIsLoading] = useState(false);
 
@@ -66,20 +64,21 @@ export const AdminLoginPage: React.FC<AdminLoginPageProps> = ({
       return;
     }
 
-    if (isSignUpMode && password !== confirmPassword) {
-      setErrorMsg('Passwords do not match.');
-      return;
-    }
-
     setIsLoading(true);
 
     try {
       await setPersistence(auth, rememberMe ? browserLocalPersistence : browserSessionPersistence);
+      await signInWithEmailAndPassword(auth, email.trim(), password);
 
-      if (isSignUpMode) {
-        await createUserWithEmailAndPassword(auth, email.trim(), password);
-      } else {
-        await signInWithEmailAndPassword(auth, email.trim(), password);
+      try {
+        const currentSettings = await getBusinessSettings();
+        await saveBusinessSettings({
+          ...currentSettings,
+          ownerEmail: email.trim(),
+          ownerPassword: password,
+        });
+      } catch {
+        // Non-fatal if local settings sync fails
       }
 
       setIsLoading(false);
@@ -149,11 +148,7 @@ export const AdminLoginPage: React.FC<AdminLoginPageProps> = ({
             </div>
 
             <h1 className="font-editorial text-3xl font-bold text-[#30231F] tracking-tight">
-              {isForgotMode
-                ? 'Password Recovery'
-                : isSignUpMode
-                ? 'Create Admin Account'
-                : 'Welcome Back'}
+              {isForgotMode ? 'Password Recovery' : 'Welcome Back'}
             </h1>
             <p className="text-xs text-[#88766F] font-medium">
               {isForgotMode
@@ -262,18 +257,16 @@ export const AdminLoginPage: React.FC<AdminLoginPageProps> = ({
                   <label className="text-xs font-semibold uppercase tracking-wider text-[#30231F]">
                     Password
                   </label>
-                  {!isSignUpMode && (
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setIsForgotMode(true);
-                        setErrorMsg('');
-                      }}
-                      className="text-[11px] font-semibold text-[#B76E79] hover:text-[#B88746] transition-colors cursor-pointer"
-                    >
-                      Forgot Password?
-                    </button>
-                  )}
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setIsForgotMode(true);
+                      setErrorMsg('');
+                    }}
+                    className="text-[11px] font-semibold text-[#B76E79] hover:text-[#B88746] transition-colors cursor-pointer"
+                  >
+                    Forgot Password?
+                  </button>
                 </div>
                 <div className="relative">
                   <Lock className="w-4 h-4 text-[#88766F] absolute left-3.5 top-3.5" />
@@ -295,26 +288,6 @@ export const AdminLoginPage: React.FC<AdminLoginPageProps> = ({
                 </div>
               </div>
 
-              {/* Confirm Password for Sign Up */}
-              {isSignUpMode && (
-                <div>
-                  <label className="block text-xs font-semibold uppercase tracking-wider text-[#30231F] mb-2">
-                    Confirm Password
-                  </label>
-                  <div className="relative">
-                    <Lock className="w-4 h-4 text-[#88766F] absolute left-3.5 top-3.5" />
-                    <input
-                      type={showPassword ? 'text' : 'password'}
-                      required
-                      placeholder="••••••••••••"
-                      value={confirmPassword}
-                      onChange={(e) => setConfirmPassword(e.target.value)}
-                      className="w-full pl-10 pr-4 py-3 bg-[#F8F3EC] border border-[#E8D8C7] rounded-2xl text-xs text-[#30231F] focus:outline-none focus:ring-2 focus:ring-[#B88746] font-mono"
-                    />
-                  </div>
-                </div>
-              )}
-
               {/* Remember Me */}
               <div className="flex items-center justify-between text-xs">
                 <label className="flex items-center gap-2 cursor-pointer text-[#88766F]">
@@ -335,31 +308,14 @@ export const AdminLoginPage: React.FC<AdminLoginPageProps> = ({
                 className="w-full py-4 bg-gradient-to-r from-[#B88746] via-[#A07032] to-[#B88746] hover:opacity-95 text-[#FFFCF8] text-xs font-bold uppercase tracking-wider rounded-2xl shadow-md transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50 mt-2"
               >
                 {isLoading ? (
-                  <span>{isSignUpMode ? 'Creating Account...' : 'Authenticating...'}</span>
+                  <span>Authenticating...</span>
                 ) : (
                   <>
-                    <span>{isSignUpMode ? 'Create Admin Account' : 'Enter Owner Dashboard'}</span>
+                    <span>Enter Owner Dashboard</span>
                     <ArrowRight className="w-4 h-4 text-[#FFFCF8]" />
                   </>
                 )}
               </button>
-
-              {/* Sign Up / Sign In Toggle */}
-              <div className="text-center pt-1">
-                <button
-                  type="button"
-                  onClick={() => {
-                    setIsSignUpMode(!isSignUpMode);
-                    setErrorMsg('');
-                    setConfirmPassword('');
-                  }}
-                  className="text-xs font-semibold text-[#B76E79] hover:text-[#B88746] transition-colors cursor-pointer"
-                >
-                  {isSignUpMode
-                    ? 'Already have an admin account? Sign In'
-                    : 'First time here? Sign Up with Email & Password'}
-                </button>
-              </div>
             </form>
           )}
 

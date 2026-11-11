@@ -175,7 +175,7 @@ export default function App() {
 
   const handleLogout = async () => {
     await signOut(auth);
-    setViewMode('public');
+    setViewMode('admin_login');
   };
 
   const pendingBookingsCount = bookings.filter((b) => b.status === 'Pending').length;

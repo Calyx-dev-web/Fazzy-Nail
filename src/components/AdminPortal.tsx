@@ -1,4 +1,6 @@
 import React, { useState, useEffect } from 'react';
+import { updateEmail, updatePassword, verifyBeforeUpdateEmail } from 'firebase/auth';
+import { auth } from '../firebase';
 import {
   Booking,
   Inquiry,
@@ -229,10 +231,16 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
   }, [selectedCustomer]);
 
   // Business Settings Edit state
-  const [editSettings, setEditSettings] = useState<BusinessSettings>(settings);
+  const [editSettings, setEditSettings] = useState<BusinessSettings>({
+    ...settings,
+    ownerEmail: auth.currentUser?.email || settings.ownerEmail,
+  });
 
   useEffect(() => {
-    setEditSettings(settings);
+    setEditSettings({
+      ...settings,
+      ownerEmail: auth.currentUser?.email || settings.ownerEmail,
+    });
   }, [settings]);
 
   useEffect(() => {
@@ -483,8 +491,57 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
 
   const handleSaveSettings = async (e: React.FormEvent) => {
     e.preventDefault();
-    await saveBusinessSettings(editSettings);
-    showToast('Fazzy Nails business settings updated! Changes reflect live on the website.');
+    const currentUser = auth.currentUser;
+    const nextEmail = (editSettings.ownerEmail || '').trim();
+    const nextPassword = editSettings.ownerPassword || '';
+    let emailVerificationPending = false;
+
+    if (currentUser) {
+      try {
+        if (nextEmail && nextEmail !== currentUser.email) {
+          try {
+            await updateEmail(currentUser, nextEmail);
+          } catch (emailErr: any) {
+            if (emailErr?.code === 'auth/operation-not-allowed') {
+              await verifyBeforeUpdateEmail(currentUser, nextEmail);
+              emailVerificationPending = true;
+            } else {
+              throw emailErr;
+            }
+          }
+        }
+
+        if (nextPassword && nextPassword !== settings.ownerPassword) {
+          await updatePassword(currentUser, nextPassword);
+        }
+      } catch (err: any) {
+        const code = err?.code || '';
+        if (code === 'auth/requires-recent-login') {
+          showToast('For security, please log out and log back in before changing your login email or password.');
+        } else if (code === 'auth/weak-password') {
+          showToast('New password must be at least 6 characters long.');
+        } else if (code === 'auth/invalid-email') {
+          showToast('Please enter a valid Owner Admin Email address.');
+        } else if (code === 'auth/email-already-in-use') {
+          showToast('That email address is already in use by another account.');
+        } else {
+          showToast('Could not update login credentials. Please try again.');
+        }
+        return;
+      }
+    }
+
+    await saveBusinessSettings({
+      ...editSettings,
+      ownerEmail: nextEmail || editSettings.ownerEmail,
+      ownerPassword: nextPassword,
+    });
+
+    if (emailVerificationPending) {
+      showToast(`Settings saved! Check ${nextEmail} to confirm your new admin email.`);
+    } else {
+      showToast('Fazzy Nails business settings & login credentials updated!');
+    }
     onRefreshData();
   };
 
@@ -1766,7 +1823,7 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
                         <label className="block font-semibold mb-1">Owner Admin Email</label>
                         <input
                           type="email"
-                          value={editSettings.ownerEmail || 'owner@fazzynails.com'}
+                          value={editSettings.ownerEmail ?? auth.currentUser?.email ?? ''}
                           onChange={(e) => setEditSettings({ ...editSettings, ownerEmail: e.target.value })}
                           className="w-full px-3.5 py-2.5 bg-[#F8F3EC] border border-[#E8D8C7] rounded-xl text-[#30231F]"
                         />
@@ -1777,7 +1834,7 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
                         <input
                           type="text"
                           placeholder="Enter new admin password"
-                          value={editSettings.ownerPassword || 'admin'}
+                          value={editSettings.ownerPassword ?? ''}
                           onChange={(e) => setEditSettings({ ...editSettings, ownerPassword: e.target.value })}
                           className="w-full px-3.5 py-2.5 bg-[#F8F3EC] border border-[#E8D8C7] rounded-xl text-[#30231F] font-mono font-bold"
                         />
