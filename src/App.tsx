@@ -55,21 +55,32 @@ export default function App() {
   const [invoices, setInvoices] = useState<Invoice[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
 
-  // Check initial hash/auth for full-page admin routing
+  // Check initial pathname or hash /auth for full-page admin routing
   useEffect(() => {
-    const checkHashAndAuth = () => {
+    const checkRouteAndAuth = () => {
       const isAuth =
         sessionStorage.getItem('fzn_owner_auth') === 'true' ||
         localStorage.getItem('fzn_owner_auth_remember') === 'true';
 
-      if (window.location.hash === '#admin' || window.location.hash === '#/admin') {
+      const pathname = window.location.pathname.toLowerCase();
+      const hash = window.location.hash.toLowerCase();
+
+      if (
+        pathname.includes('/admin') ||
+        hash === '#admin' ||
+        hash === '#/admin'
+      ) {
         setViewMode(isAuth ? 'admin_portal' : 'admin_login');
       }
     };
 
-    checkHashAndAuth();
-    window.addEventListener('hashchange', checkHashAndAuth);
-    return () => window.removeEventListener('hashchange', checkHashAndAuth);
+    checkRouteAndAuth();
+    window.addEventListener('hashchange', checkRouteAndAuth);
+    window.addEventListener('popstate', checkRouteAndAuth);
+    return () => {
+      window.removeEventListener('hashchange', checkRouteAndAuth);
+      window.removeEventListener('popstate', checkRouteAndAuth);
+    };
   }, []);
 
   // Load all data from IndexedDB
