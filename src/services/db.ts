@@ -526,10 +526,17 @@ export async function getGallery(): Promise<GalleryItem[]> {
     const snap = await getDocs(collection(firestoreDb, 'gallery'));
     let items = snap.docs.map((d) => ({ ...d.data(), id: d.id } as GalleryItem));
     if (items.length === 0) {
-      if (auth.currentUser) {
-        await seedGallery(INITIAL_GALLERY);
+      let localItems: GalleryItem[] = [];
+      try {
+        localItems = await idbGetAll<GalleryItem>('gallery');
+      } catch {
+        localItems = getLocalStorageFallback<GalleryItem>('fzn_gallery', INITIAL_GALLERY);
       }
-      items = INITIAL_GALLERY;
+      const toSeed = localItems.length > 0 ? localItems : INITIAL_GALLERY;
+      if (auth.currentUser && toSeed.length > 0) {
+        await seedGallery(toSeed);
+      }
+      items = toSeed;
     }
     items = items.map((item) => ({
       ...item,
