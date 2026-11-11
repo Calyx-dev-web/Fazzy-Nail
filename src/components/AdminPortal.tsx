@@ -319,12 +319,16 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
       createdAt: new Date().toISOString(),
     };
 
-    await saveBooking(newB);
+    try {
+      await saveBooking(newB);
+      showToast(`New booking ${newB.id} for ${newB.customerName} created successfully!`);
+    } catch {
+      showToast(`Booking ${newB.id} saved locally, but Firebase Firestore rejected the write.`);
+    }
     setActiveModal(null);
     setNbName('');
     setNbPhone('');
     setNbNotes('');
-    showToast(`New booking ${newB.id} for ${newB.customerName} created successfully!`);
     onRefreshData();
   };
 
@@ -340,11 +344,15 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
       isAvailable: true,
       popular: false,
     };
-    await saveService(newS);
+    try {
+      await saveService(newS);
+      showToast(`Service "${newS.name}" added to price menu!`);
+    } catch {
+      showToast(`Service "${newS.name}" saved locally, but Firebase Firestore rejected the write.`);
+    }
     setActiveModal(null);
     setNsName('');
     setNsDesc('');
-    showToast(`Service "${newS.name}" added to price menu!`);
     onRefreshData();
   };
 
@@ -384,13 +392,17 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
       totalSpent: 0,
       appointmentCount: 1,
     };
-    await saveCustomer(newC);
+    try {
+      await saveCustomer(newC);
+      showToast(`Customer "${newC.name}" added to directory!`);
+    } catch {
+      showToast(`Customer "${newC.name}" saved locally, but Firebase Firestore rejected the write.`);
+    }
     setActiveModal(null);
     setNcName('');
     setNcPhone('');
     setNcEmail('');
     setNcNotes('');
-    showToast(`Customer "${newC.name}" added to directory!`);
     onRefreshData();
   };
 
@@ -406,12 +418,16 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
       status: niStatus,
       paymentMethod: 'Bank Transfer',
     };
-    await saveInvoice(newI);
+    try {
+      await saveInvoice(newI);
+      showToast(`Invoice ${newI.id} created!`);
+    } catch {
+      showToast(`Invoice ${newI.id} saved locally, but Firebase Firestore rejected the write.`);
+    }
     setActiveModal(null);
     setNiCustomerName('');
     setNiPhone('');
     setNiDesc('');
-    showToast(`Invoice ${newI.id} created!`);
     onRefreshData();
   };
 
@@ -427,10 +443,14 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
       description: esDesc.trim(),
       isAvailable: esAvailable,
     };
-    await saveService(updated);
+    try {
+      await saveService(updated);
+      showToast(`Service "${updated.name}" updated (Price: ₦${updated.price.toLocaleString()})!`);
+    } catch {
+      showToast(`Service "${updated.name}" updated locally, but Firebase Firestore rejected the write.`);
+    }
     setActiveModal(null);
     setSelectedService(null);
-    showToast(`Service "${updated.name}" updated (Price: ₦${updated.price.toLocaleString()})!`);
     onRefreshData();
   };
 
@@ -469,10 +489,14 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
       time: ebTime,
       status: ebStatus,
     };
-    await saveBooking(updated);
+    try {
+      await saveBooking(updated);
+      showToast(`Booking ${updated.id} updated!`);
+    } catch {
+      showToast(`Booking ${updated.id} updated locally, but Firebase Firestore rejected the write.`);
+    }
     setActiveModal(null);
     setSelectedBooking(null);
-    showToast(`Booking ${updated.id} updated!`);
     onRefreshData();
   };
 
@@ -487,10 +511,14 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
       notes: ecNotes.trim(),
       totalSpent: Number(ecSpent) || 0,
     };
-    await saveCustomer(updated);
+    try {
+      await saveCustomer(updated);
+      showToast(`Customer ${updated.name} updated!`);
+    } catch {
+      showToast(`Customer ${updated.name} updated locally, but Firebase Firestore rejected the write.`);
+    }
     setActiveModal(null);
     setSelectedCustomer(null);
-    showToast(`Customer ${updated.name} updated!`);
     onRefreshData();
   };
 

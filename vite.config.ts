@@ -23,9 +23,17 @@ function resolveBasePath(): string {
 }
 
 export default defineConfig(() => {
+  const envFallbackKey = process.env.VITE_FIREBASE_API_KEY || process.env.FIREBASE_API_KEY;
   return {
     base: resolveBasePath(),
     plugins: [react(), tailwindcss()],
+    ...(envFallbackKey && !process.env.VITE_FIREBASE_API_KEY
+      ? {
+          define: {
+            'import.meta.env.VITE_FIREBASE_API_KEY': JSON.stringify(envFallbackKey),
+          },
+        }
+      : {}),
     resolve: {
       alias: {
         '@': path.resolve(import.meta.dirname, '.'),
