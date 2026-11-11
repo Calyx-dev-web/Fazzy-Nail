@@ -119,18 +119,18 @@ Please confirm my slot!`
     : '';
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 bg-stone-900/60 backdrop-blur-xs overflow-y-auto">
-      <div className="relative w-full max-w-2xl bg-white rounded-3xl shadow-2xl border border-stone-200 overflow-hidden my-8">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-2.5 sm:p-6 bg-stone-900/70 backdrop-blur-xs overflow-y-auto">
+      <div className="relative w-full max-w-2xl bg-white rounded-2xl sm:rounded-3xl shadow-2xl border border-stone-200 overflow-hidden my-auto max-h-[94vh] flex flex-col">
         {/* Header */}
-        <div className="px-6 py-5 bg-[#FAF8F5] border-b border-stone-200 flex items-center justify-between">
+        <div className="px-4 sm:px-6 py-4 sm:py-5 bg-[#FAF8F5] border-b border-stone-200 flex items-center justify-between shrink-0">
           <div className="flex items-center gap-2">
-            <span className="font-editorial text-2xl font-bold text-stone-900">
+            <span className="font-editorial text-xl sm:text-2xl font-bold text-stone-900">
               {confirmedBooking ? 'Appointment Confirmed!' : 'Book Your Session'}
             </span>
           </div>
           <button
             onClick={handleResetAndClose}
-            className="p-2 text-stone-500 hover:text-stone-900 rounded-full hover:bg-stone-200/60 transition-colors cursor-pointer"
+            className="p-1.5 sm:p-2 text-stone-500 hover:text-stone-900 rounded-full hover:bg-stone-200/60 transition-colors cursor-pointer"
             aria-label="Close booking modal"
           >
             <X className="w-5 h-5" />
@@ -139,8 +139,8 @@ Please confirm my slot!`
 
         {confirmedBooking ? (
           /* Confirmation View */
-          <div className="p-6 sm:p-8 space-y-6">
-            <div className="p-6 rounded-2xl bg-rose-50/70 border border-rose-200 text-center space-y-3">
+          <div className="p-4 sm:p-8 space-y-5 sm:space-y-6 overflow-y-auto">
+            <div className="p-5 rounded-2xl bg-rose-50/70 border border-rose-200 text-center space-y-3">
               <div className="w-12 h-12 mx-auto rounded-full bg-emerald-100 flex items-center justify-center text-emerald-700">
                 <CheckCircle2 className="w-6 h-6" />
               </div>
@@ -148,7 +148,7 @@ Please confirm my slot!`
                 You’re Booked, {confirmedBooking.customerName}!
               </h3>
               <p className="text-xs sm:text-sm text-stone-600 max-w-md mx-auto">
-                Your appointment request is saved in our system. Click below to chat directly with us on WhatsApp for rapid 1-minute confirmation!
+                Your appointment request is saved in our system. Click below to chat directly with us on WhatsApp for rapid confirmation!
               </p>
               <div className="inline-block px-3 py-1 bg-white border border-stone-200 rounded-md font-mono text-xs font-semibold text-stone-700">
                 Booking Reference: {confirmedBooking.id}
@@ -156,7 +156,7 @@ Please confirm my slot!`
             </div>
 
             {/* Appointment Details Card */}
-            <div className="p-5 rounded-2xl bg-stone-50 border border-stone-200 space-y-3 text-xs sm:text-sm">
+            <div className="p-4 sm:p-5 rounded-2xl bg-stone-50 border border-stone-200 space-y-3 text-xs sm:text-sm">
               <div className="flex justify-between items-center border-b border-stone-200 pb-2">
                 <span className="text-stone-500">Service:</span>
                 <span className="font-semibold text-stone-900">{confirmedBooking.serviceName}</span>
@@ -185,13 +185,13 @@ Please confirm my slot!`
               </div>
             </div>
 
-            {/* Direct WhatsApp Call-to-Action (Prompt 3 requirement) */}
-            <div className="flex flex-col sm:flex-row gap-3 pt-2">
+            {/* Direct WhatsApp Call-to-Action */}
+            <div className="flex flex-col sm:flex-row gap-2.5 pt-2">
               <a
                 href={getWhatsAppUrl(whatsappMessage)}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex-1 py-3.5 px-4 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold rounded-xl text-center flex items-center justify-center gap-2 shadow-sm transition-all"
+                className="flex-1 py-3.5 px-4 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold rounded-xl text-center flex items-center justify-center gap-2 shadow-sm transition-all text-xs sm:text-sm"
               >
                 <MessageSquare className="w-4 h-4 text-white" />
                 <span>Confirm on WhatsApp Now</span>
@@ -199,7 +199,7 @@ Please confirm my slot!`
 
               <a
                 href={`tel:${BUSINESS_INFO.phoneClean}`}
-                className="py-3.5 px-5 bg-stone-100 hover:bg-stone-200 text-stone-800 font-medium rounded-xl text-center flex items-center justify-center gap-2 transition-colors"
+                className="py-3.5 px-5 bg-stone-100 hover:bg-stone-200 text-stone-800 font-medium rounded-xl text-center flex items-center justify-center gap-2 transition-colors text-xs sm:text-sm"
               >
                 <Phone className="w-4 h-4 text-stone-600" />
                 <span>Call Fazzynails</span>
@@ -217,16 +217,16 @@ Please confirm my slot!`
           </div>
         ) : (
           /* Booking Form */
-          <form onSubmit={handleSubmit} className="p-6 sm:p-8 space-y-6">
+          <form onSubmit={handleSubmit} className="p-4 sm:p-8 space-y-4 sm:space-y-6 overflow-y-auto">
             {/* Step 1: Service selection */}
             <div>
-              <label className="block text-xs font-semibold uppercase tracking-wider text-stone-700 mb-2">
+              <label className="block text-xs font-semibold uppercase tracking-wider text-stone-700 mb-1.5">
                 1. Select Desired Service
               </label>
               <select
                 value={selectedServiceId}
                 onChange={(e) => setSelectedServiceId(e.target.value)}
-                className="w-full px-4 py-3 bg-stone-50 border border-stone-300 rounded-xl text-stone-900 text-sm focus:outline-hidden focus:ring-2 focus:ring-stone-900 focus:bg-white"
+                className="w-full px-3.5 sm:px-4 py-2.5 sm:py-3 bg-stone-50 border border-stone-300 rounded-xl text-stone-900 text-xs sm:text-sm focus:outline-hidden focus:ring-2 focus:ring-stone-900 focus:bg-white"
                 required
               >
                 {services.map((srv) => (
@@ -238,9 +238,9 @@ Please confirm my slot!`
             </div>
 
             {/* Step 2: Shape & Length */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
               <div>
-                <label className="block text-xs font-semibold uppercase tracking-wider text-stone-700 mb-2">
+                <label className="block text-xs font-semibold uppercase tracking-wider text-stone-700 mb-1.5">
                   2. Nail Shape
                 </label>
                 <div className="grid grid-cols-3 gap-1.5">
@@ -262,7 +262,7 @@ Please confirm my slot!`
               </div>
 
               <div>
-                <label className="block text-xs font-semibold uppercase tracking-wider text-stone-700 mb-2">
+                <label className="block text-xs font-semibold uppercase tracking-wider text-stone-700 mb-1.5">
                   3. Nail Length
                 </label>
                 <div className="grid grid-cols-2 gap-1.5">
@@ -285,9 +285,9 @@ Please confirm my slot!`
             </div>
 
             {/* Step 3: Date & Time */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
               <div>
-                <label className="block text-xs font-semibold uppercase tracking-wider text-stone-700 mb-2 flex items-center gap-1.5">
+                <label className="block text-xs font-semibold uppercase tracking-wider text-stone-700 mb-1.5 flex items-center gap-1.5">
                   <Calendar className="w-3.5 h-3.5 text-stone-500" />
                   <span>4. Appointment Date</span>
                 </label>
@@ -296,20 +296,20 @@ Please confirm my slot!`
                   value={date}
                   onChange={(e) => setDate(e.target.value)}
                   min={new Date().toISOString().split('T')[0]}
-                  className="w-full px-4 py-2.5 bg-stone-50 border border-stone-300 rounded-xl text-stone-900 text-sm focus:outline-hidden focus:ring-2 focus:ring-stone-900 focus:bg-white"
+                  className="w-full px-3.5 sm:px-4 py-2.5 bg-stone-50 border border-stone-300 rounded-xl text-stone-900 text-xs sm:text-sm focus:outline-hidden focus:ring-2 focus:ring-stone-900 focus:bg-white"
                   required
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-semibold uppercase tracking-wider text-stone-700 mb-2 flex items-center gap-1.5">
+                <label className="block text-xs font-semibold uppercase tracking-wider text-stone-700 mb-1.5 flex items-center gap-1.5">
                   <Clock className="w-3.5 h-3.5 text-stone-500" />
                   <span>5. Time Slot</span>
                 </label>
                 <select
                   value={time}
                   onChange={(e) => setTime(e.target.value)}
-                  className="w-full px-4 py-2.5 bg-stone-50 border border-stone-300 rounded-xl text-stone-900 text-sm focus:outline-hidden focus:ring-2 focus:ring-stone-900 focus:bg-white"
+                  className="w-full px-3.5 sm:px-4 py-2.5 bg-stone-50 border border-stone-300 rounded-xl text-stone-900 text-xs sm:text-sm focus:outline-hidden focus:ring-2 focus:ring-stone-900 focus:bg-white"
                   required
                 >
                   {TIME_SLOTS.map((t) => (
@@ -322,7 +322,7 @@ Please confirm my slot!`
             </div>
 
             {/* Step 4: Client contact information */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2 border-t border-stone-100">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 pt-2 border-t border-stone-100">
               <div>
                 <label className="block text-xs font-medium text-stone-700 mb-1">
                   Full Name *
@@ -333,7 +333,7 @@ Please confirm my slot!`
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                   required
-                  className="w-full px-4 py-2.5 bg-stone-50 border border-stone-300 rounded-xl text-stone-900 text-sm focus:outline-hidden focus:ring-2 focus:ring-stone-900 focus:bg-white"
+                  className="w-full px-3.5 sm:px-4 py-2.5 bg-stone-50 border border-stone-300 rounded-xl text-stone-900 text-xs sm:text-sm focus:outline-hidden focus:ring-2 focus:ring-stone-900 focus:bg-white"
                 />
               </div>
 
@@ -347,7 +347,7 @@ Please confirm my slot!`
                   value={phone}
                   onChange={(e) => setPhone(e.target.value)}
                   required
-                  className="w-full px-4 py-2.5 bg-stone-50 border border-stone-300 rounded-xl text-stone-900 text-sm focus:outline-hidden focus:ring-2 focus:ring-stone-900 focus:bg-white font-mono text-sm"
+                  className="w-full px-3.5 sm:px-4 py-2.5 bg-stone-50 border border-stone-300 rounded-xl text-stone-900 font-mono text-xs sm:text-sm focus:outline-hidden focus:ring-2 focus:ring-stone-900 focus:bg-white"
                 />
               </div>
 
@@ -360,7 +360,7 @@ Please confirm my slot!`
                   placeholder="your.email@example.com"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className="w-full px-4 py-2.5 bg-stone-50 border border-stone-300 rounded-xl text-stone-900 text-sm focus:outline-hidden focus:ring-2 focus:ring-stone-900 focus:bg-white"
+                  className="w-full px-3.5 sm:px-4 py-2.5 bg-stone-50 border border-stone-300 rounded-xl text-stone-900 text-xs sm:text-sm focus:outline-hidden focus:ring-2 focus:ring-stone-900 focus:bg-white"
                 />
               </div>
 
@@ -373,13 +373,13 @@ Please confirm my slot!`
                   placeholder="e.g. French tips with tiny gold charms, soaking off old acrylic set first..."
                   value={notes}
                   onChange={(e) => setNotes(e.target.value)}
-                  className="w-full px-4 py-2.5 bg-stone-50 border border-stone-300 rounded-xl text-stone-900 text-sm focus:outline-hidden focus:ring-2 focus:ring-stone-900 focus:bg-white"
+                  className="w-full px-3.5 sm:px-4 py-2.5 bg-stone-50 border border-stone-300 rounded-xl text-stone-900 text-xs sm:text-sm focus:outline-hidden focus:ring-2 focus:ring-stone-900 focus:bg-white"
                 />
               </div>
             </div>
 
             {/* Total investment & Submit */}
-            <div className="pt-4 border-t border-stone-200 flex flex-col sm:flex-row items-center justify-between gap-4">
+            <div className="pt-4 border-t border-stone-200 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 w-full">
               <div>
                 <span className="text-xs text-stone-500 block">Estimated Total</span>
                 <span className="font-editorial text-2xl font-bold text-stone-900 tabular-nums">
@@ -387,11 +387,11 @@ Please confirm my slot!`
                 </span>
               </div>
 
-              <div className="flex items-center gap-3 w-full sm:w-auto">
+              <div className="flex items-center gap-2.5 w-full sm:w-auto">
                 <button
                   type="button"
                   onClick={handleResetAndClose}
-                  className="px-4 py-3 text-xs font-medium text-stone-600 hover:text-stone-900 cursor-pointer"
+                  className="px-3.5 py-3 text-xs font-medium text-stone-600 hover:text-stone-900 cursor-pointer"
                 >
                   Cancel
                 </button>
@@ -399,7 +399,7 @@ Please confirm my slot!`
                 <button
                   type="submit"
                   disabled={isSubmitting}
-                  className="flex-1 sm:flex-initial px-6 py-3 bg-stone-900 hover:bg-stone-800 text-white text-sm font-semibold rounded-xl shadow-md transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
+                  className="flex-1 sm:flex-initial px-5 sm:px-6 py-3.5 bg-stone-900 hover:bg-stone-800 text-white text-xs sm:text-sm font-semibold rounded-xl shadow-md transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
                 >
                   {isSubmitting ? (
                     <span>Securing Slot...</span>

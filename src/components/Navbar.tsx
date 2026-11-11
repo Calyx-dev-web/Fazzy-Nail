@@ -74,23 +74,23 @@ export const Navbar: React.FC<NavbarProps> = ({
       </div>
 
       {/* Main Navigation (Strict 3-zone contract) */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-18 flex items-center justify-between gap-3 sm:gap-6 lg:gap-8">
+      <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 h-16 sm:h-18 flex items-center justify-between gap-2 sm:gap-4 lg:gap-8 max-w-full overflow-hidden">
         {/* Zone 1: Brand Logo & Wordmark */}
         <button
           onClick={() => handleNavClick('home')}
-          className="text-left group flex items-center gap-2.5 sm:gap-3 shrink-0 cursor-pointer"
+          className="text-left group flex items-center gap-2 sm:gap-3 shrink min-w-0 cursor-pointer"
         >
           <img
             src={IMAGES.logo}
             alt="Fazzynails Logo"
-            className="w-10 h-10 sm:w-12 sm:h-12 rounded-full object-cover border-2 border-amber-300 shadow-xs group-hover:scale-105 transition-transform shrink-0"
+            className="w-9 h-9 sm:w-11 sm:h-11 rounded-full object-cover border-2 border-amber-300 shadow-xs group-hover:scale-105 transition-transform shrink-0"
           />
-          <div className="flex flex-col justify-center">
-            <span className="font-editorial text-xl sm:text-2xl font-bold tracking-tight text-stone-900 flex items-center gap-1.5">
+          <div className="flex flex-col justify-center min-w-0">
+            <span className="font-editorial text-lg sm:text-2xl font-bold tracking-tight text-stone-900 flex items-center gap-1 truncate">
               Fazzynails
-              <Sparkles className="w-3.5 h-3.5 text-rose-500 fill-rose-300/40" />
+              <Sparkles className="w-3.5 h-3.5 text-rose-500 fill-rose-300/40 shrink-0" />
             </span>
-            <span className="text-[10px] tracking-widest uppercase font-medium text-stone-500">
+            <span className="text-[9px] sm:text-[10px] tracking-wider uppercase font-medium text-stone-500 truncate hidden xs:block">
               {BUSINESS_INFO.motto}
             </span>
           </div>
@@ -114,26 +114,14 @@ export const Navbar: React.FC<NavbarProps> = ({
           ))}
         </nav>
 
-        {/* Zone 3: Primary Action + Admin Shortcut (2FA Secured) */}
+        {/* Zone 3: Primary Action */}
         <div className="flex items-center gap-1.5 sm:gap-3 shrink-0">
-          <button
-            onClick={onOpenAdmin}
-            title="Admin Management Panel (2FA Protected)"
-            className="p-2 text-stone-600 hover:text-stone-900 hover:bg-stone-100 rounded-lg transition-colors relative cursor-pointer border border-stone-200/80 bg-white shadow-2xs"
-            aria-label="Open Admin Dashboard (2FA Protected)"
-          >
-            <Shield className="w-4 h-4 text-stone-800" />
-            {pendingBookingsCount > 0 && (
-              <span className="absolute top-1 right-1 w-2 h-2 bg-rose-500 rounded-full" />
-            )}
-            <span className="sr-only">Admin 2FA Security</span>
-          </button>
 
           <a
             href={getWhatsAppUrl("Hello Fazzynails, I would like to book a session with you!")}
             target="_blank"
             rel="noopener noreferrer"
-            className="hidden sm:inline-flex items-center gap-1.5 px-3 py-2 text-xs font-semibold text-emerald-800 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200/80 rounded-lg transition-colors whitespace-nowrap"
+            className="hidden md:inline-flex items-center gap-1.5 px-3 py-2 text-xs font-semibold text-emerald-800 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200/80 rounded-lg transition-colors whitespace-nowrap shrink-0"
           >
             <MessageSquare className="w-3.5 h-3.5 text-emerald-600" />
             <span>WhatsApp</span>
@@ -141,19 +129,16 @@ export const Navbar: React.FC<NavbarProps> = ({
 
           <button
             onClick={onOpenBooking}
-            className="inline-flex items-center justify-center gap-1.5 sm:gap-2 px-2.5 sm:px-4 py-2 sm:py-2.5 min-h-[38px] sm:min-h-[42px] text-xs sm:text-sm font-medium text-white bg-stone-900 hover:bg-stone-800 active:scale-[0.98] rounded-lg shadow-sm transition-all whitespace-nowrap shrink cursor-pointer"
+            className="inline-flex items-center justify-center gap-1.5 px-2.5 sm:px-4 py-2 sm:py-2.5 min-h-[36px] sm:min-h-[42px] text-xs sm:text-sm font-semibold text-white bg-stone-900 hover:bg-stone-800 active:scale-[0.98] rounded-lg shadow-sm transition-all whitespace-nowrap shrink-0 cursor-pointer"
           >
-            <Calendar className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-rose-300 shrink-0" />
-            <span className="truncate">
-              <span className="inline sm:hidden">Book</span>
-              <span className="hidden sm:inline">Book Appointment</span>
-            </span>
+            <Calendar className="w-3.5 h-3.5 text-rose-300 shrink-0" />
+            <span>Book Now</span>
           </button>
 
           {/* Mobile menu toggle */}
           <button
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            className="lg:hidden p-2 text-stone-700 hover:bg-stone-100 rounded-lg cursor-pointer"
+            className="lg:hidden p-2 text-stone-700 hover:bg-stone-100 rounded-lg cursor-pointer shrink-0"
             aria-label="Toggle navigation menu"
           >
             {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
@@ -181,17 +166,6 @@ export const Navbar: React.FC<NavbarProps> = ({
           </div>
 
           <div className="pt-3 border-t border-stone-200 flex flex-col gap-2">
-            <button
-              onClick={() => {
-                setMobileMenuOpen(false);
-                onOpenAdmin();
-              }}
-              className="w-full flex items-center justify-center gap-2 py-2.5 text-xs font-medium text-stone-700 bg-stone-100 rounded-lg"
-            >
-              <Shield className="w-4 h-4 text-stone-600" />
-              <span>Admin Management Dashboard</span>
-            </button>
-            
             <a
               href={getWhatsAppUrl("Hello Fazzynails, I need an emergency appointment slot!")}
               target="_blank"

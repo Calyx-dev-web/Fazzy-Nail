@@ -1,15 +1,16 @@
-import heroImg from './fazzynails_hero_1792990686791.jpg';
-import acrylicImg from './fazzynails_acrylic_set_1792990688666.jpg';
-import gelImg from './fazzynails_gel_polish_1792990687753.jpg';
-import studioImg from './fazzynails_studio_1792990689173.jpg';
-import logoImg from './image_d0ec8d5e.png';
+// Realistic high-resolution photography assets for Fazzynails luxury salon
+const REAL_HERO_IMG = 'https://images.unsplash.com/photo-1604654894610-df63bc536371?auto=format&fit=crop&w=1200&q=80';
+const REAL_ACRYLIC_IMG = 'https://images.unsplash.com/photo-1632345031435-8727f6897d53?auto=format&fit=crop&w=800&q=80';
+const REAL_GEL_IMG = 'https://images.unsplash.com/photo-1519014816548-bf5fe059798b?auto=format&fit=crop&w=800&q=80';
+const REAL_STUDIO_IMG = 'https://images.unsplash.com/photo-1560066984-138dadb4c035?auto=format&fit=crop&w=800&q=80';
+const UPLOADED_FAZZY_LOGO = '/assets/aistudio/IMG_20261111_015106_390_dbe186d0.jpg';
 
 export const IMAGES = {
-  hero: heroImg,
-  acrylic: acrylicImg,
-  gel: gelImg,
-  studio: studioImg,
-  logo: logoImg,
+  hero: REAL_HERO_IMG,
+  acrylic: REAL_ACRYLIC_IMG,
+  gel: REAL_GEL_IMG,
+  studio: REAL_STUDIO_IMG,
+  logo: UPLOADED_FAZZY_LOGO,
 };
 
 /**
@@ -24,7 +25,7 @@ export function resolveImageUrl(url: string | undefined): string {
     return url;
   }
 
-  // Match known asset keys or filenames
+  // Match known asset keys or legacy filenames
   if (url.includes('fazzynails_hero') || url === 'hero') return IMAGES.hero;
   if (url.includes('fazzynails_acrylic') || url === 'acrylic') return IMAGES.acrylic;
   if (url.includes('fazzynails_gel') || url === 'gel') return IMAGES.gel;

@@ -151,8 +151,7 @@ export const Footer: React.FC<FooterProps> = ({ onOpenBooking, onOpenAdmin, onNa
               <div className="flex items-start gap-2">
                 <Clock className="w-4 h-4 text-stone-500 shrink-0 mt-0.5" />
                 <div>
-                  <p className="text-stone-300 font-medium">{BUSINESS_INFO.hours.weekdays}</p>
-                  <p>{BUSINESS_INFO.hours.sunday}</p>
+                  <p className="text-stone-300 font-medium">{BUSINESS_INFO.hours}</p>
                 </div>
               </div>
 
@@ -185,13 +184,6 @@ export const Footer: React.FC<FooterProps> = ({ onOpenBooking, onOpenAdmin, onNa
           <p>© {new Date().getFullYear()} Fazzynails. All rights reserved. {BUSINESS_INFO.motto}.</p>
 
           <div className="flex items-center gap-6">
-            <button
-              onClick={onOpenAdmin}
-              className="flex items-center gap-1.5 text-stone-400 hover:text-stone-200 transition-colors cursor-pointer"
-            >
-              <Shield className="w-3.5 h-3.5" />
-              <span>Admin Management</span>
-            </button>
 
             <button
               onClick={scrollToTop}

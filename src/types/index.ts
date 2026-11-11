@@ -69,9 +69,56 @@ export interface BlogPost {
   imageUrl: string;
 }
 
-export const BUSINESS_INFO = {
-  name: 'Fazzynails',
-  motto: 'Nails that speak class',
+export interface Customer {
+  id: string;
+  name: string;
+  phone: string;
+  email: string;
+  notes?: string;
+  createdAt: string;
+  totalSpent: number;
+  appointmentCount: number;
+  lastVisit?: string;
+}
+
+export interface Invoice {
+  id: string; // e.g. "INV-1001"
+  customerName: string;
+  customerPhone: string;
+  serviceDescription: string;
+  amount: number;
+  date: string; // YYYY-MM-DD
+  status: 'Paid' | 'Unpaid';
+  paymentMethod?: string;
+}
+
+export interface BusinessSettings {
+  name: string;
+  ownerName: string;
+  ownerEmail: string;
+  ownerPassword: string;
+  motto: string;
+  phone: string;
+  phoneClean: string;
+  whatsappRaw: string;
+  whatsappUrl: string;
+  facebookUrl: string;
+  email: string;
+  address: string;
+  hours: string;
+  logoUrl: string;
+  profileImage: string;
+  heroTitle: string;
+  heroSubtitle: string;
+  announcement: string;
+}
+
+export const DEFAULT_BUSINESS_SETTINGS: BusinessSettings = {
+  name: 'Fazzy Nails',
+  ownerName: 'Favour Okeke',
+  ownerEmail: 'owner@fazzynails.com',
+  ownerPassword: 'admin',
+  motto: 'Pretty Nails ✦ Greater You',
   phone: '+234 907 281 7540',
   phoneClean: '+2349072817540',
   whatsappRaw: '2349072817540',
@@ -79,15 +126,17 @@ export const BUSINESS_INFO = {
   facebookUrl: 'https://www.facebook.com/share/1FNAEVytV5/',
   email: 'info@fazzynails.com',
   address: 'Studio Atelier, Agbani, Enugu State, Nigeria',
-  googleMapsEmbedUrl: 'https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d31707.97022137021!2d7.53!3d6.31!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x1044bb7fb3404555%3A0x6b63c9b7bbdf2693!2sAgbani%2C%20Enugu!5e0!3m2!1sen!2sng!4v1714000000000!5m2!1sen!2sng',
-  hours: {
-    weekdays: 'Monday – Saturday: 9:00 AM – 7:00 PM',
-    sunday: 'Sunday: 1:00 PM – 6:00 PM',
-    emergency: 'Emergency & VIP Out-of-Hours Slots available via WhatsApp',
-  },
+  hours: 'Mon–Sat: 9:00 AM – 7:00 PM | Sun: 1:00 PM – 6:00 PM',
+  logoUrl: '/assets/aistudio/IMG_20261111_015106_390_dbe186d0.jpg',
+  profileImage: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&w=400&q=80',
+  heroTitle: 'Where Elegance Meets Perfection.',
+  heroSubtitle: 'Step into a sanctuary of tailored luxury. From immaculate Gel Polish to long-wearing Sculpted Acrylics, every set is crafted with medical-grade hygiene and high-fashion finesse.',
+  announcement: 'Same-Day Slots Available: Mon–Sat 9AM–7PM · Sunday 1PM–6PM',
 };
 
-export const getWhatsAppUrl = (customText?: string) => {
-  if (!customText) return BUSINESS_INFO.whatsappUrl;
-  return `https://wa.me/${BUSINESS_INFO.whatsappRaw}?text=${encodeURIComponent(customText)}`;
+export const BUSINESS_INFO = DEFAULT_BUSINESS_SETTINGS;
+
+export const getWhatsAppUrl = (customText?: string, phoneRaw = DEFAULT_BUSINESS_SETTINGS.whatsappRaw) => {
+  if (!customText) return `https://wa.me/${phoneRaw}`;
+  return `https://wa.me/${phoneRaw}?text=${encodeURIComponent(customText)}`;
 };

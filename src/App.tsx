@@ -5,6 +5,10 @@ import {
   Booking,
   Inquiry,
   Review,
+  Customer,
+  Invoice,
+  BusinessSettings,
+  DEFAULT_BUSINESS_SETTINGS,
 } from './types';
 import {
   getServices,
@@ -12,6 +16,9 @@ import {
   getBookings,
   getInquiries,
   getReviews,
+  getCustomers,
+  getInvoices,
+  getBusinessSettings,
   DB_CHANGE_EVENT,
 } from './services/db';
 
@@ -25,43 +32,68 @@ import { AboutSection } from './components/AboutSection';
 import { ReviewsSection } from './components/ReviewsSection';
 import { BlogSection } from './components/BlogSection';
 import { ContactSection } from './components/ContactSection';
-import { AdminDashboard } from './components/AdminDashboard';
-import { AdminAuthModal } from './components/AdminAuthModal';
+import { AdminPortal } from './components/AdminPortal';
+import { AdminLoginPage } from './components/AdminLoginPage';
 import { FloatingContactBar } from './components/FloatingContactBar';
 import { Footer } from './components/Footer';
 
 export default function App() {
+  const [viewMode, setViewMode] = useState<'public' | 'admin_login' | 'admin_portal'>('public');
   const [currentPage, setCurrentPage] = useState<string>('home');
   const [isBookingOpen, setIsBookingOpen] = useState<boolean>(false);
-  const [isAdminOpen, setIsAdminOpen] = useState<boolean>(false);
-  const [isAuthModalOpen, setIsAuthModalOpen] = useState<boolean>(false);
   const [preSelectedService, setPreSelectedService] = useState<NailService | null>(null);
   const [activeServiceCategory, setActiveServiceCategory] = useState<string>('all');
 
   // IndexedDB State
+  const [settings, setSettings] = useState<BusinessSettings>(DEFAULT_BUSINESS_SETTINGS);
   const [services, setServices] = useState<NailService[]>([]);
   const [galleryItems, setGalleryItems] = useState<GalleryItem[]>([]);
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [inquiries, setInquiries] = useState<Inquiry[]>([]);
   const [reviews, setReviews] = useState<Review[]>([]);
+  const [customers, setCustomers] = useState<Customer[]>([]);
+  const [invoices, setInvoices] = useState<Invoice[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
+
+  // Check initial hash/auth for full-page admin routing
+  useEffect(() => {
+    const checkHashAndAuth = () => {
+      const isAuth =
+        sessionStorage.getItem('fzn_owner_auth') === 'true' ||
+        localStorage.getItem('fzn_owner_auth_remember') === 'true';
+
+      if (window.location.hash === '#admin' || window.location.hash === '#/admin') {
+        setViewMode(isAuth ? 'admin_portal' : 'admin_login');
+      }
+    };
+
+    checkHashAndAuth();
+    window.addEventListener('hashchange', checkHashAndAuth);
+    return () => window.removeEventListener('hashchange', checkHashAndAuth);
+  }, []);
 
   // Load all data from IndexedDB
   const refreshDatabase = useCallback(async () => {
     try {
-      const [srvList, galList, bookList, inqList, revList] = await Promise.all([
+      const [sett, srvList, galList, bookList, inqList, revList, custDb, invDb] = await Promise.all([
+        getBusinessSettings(),
         getServices(),
         getGallery(),
         getBookings(),
         getInquiries(),
         getReviews(),
+        getCustomers(),
+        getInvoices(),
       ]);
 
+      setSettings(sett);
       setServices(srvList);
       setGalleryItems(galList);
       setBookings(bookList);
       setInquiries(inqList);
       setReviews(revList);
+      setCustomers(custDb);
+      setInvoices(invDb);
     } catch (err) {
       console.error('Error loading database:', err);
     } finally {
@@ -72,7 +104,6 @@ export default function App() {
   useEffect(() => {
     refreshDatabase();
 
-    // Listen for custom database changes dispatched across components
     const handleDbChange = () => {
       refreshDatabase();
     };
@@ -94,7 +125,6 @@ export default function App() {
   };
 
   const handleBookFromGallery = (item: GalleryItem) => {
-    // Match appropriate service based on gallery category
     let matched = services.find((s) => s.category === item.category);
     if (!matched) {
       matched = item.category === 'acrylic' ? services[1] : services[0];
@@ -112,27 +142,66 @@ export default function App() {
   };
 
   const handleNavigate = (sectionId: string) => {
-    setCurrentPage(sectionId);
-    const el = document.getElementById(sectionId);
-    if (el) {
-      el.scrollIntoView({ behavior: 'smooth' });
+    if (viewMode !== 'public') {
+      setViewMode('public');
     }
+    setCurrentPage(sectionId);
+    setTimeout(() => {
+      const el = document.getElementById(sectionId);
+      if (el) {
+        el.scrollIntoView({ behavior: 'smooth' });
+      }
+    }, 50);
   };
 
   const handleOpenAdmin = () => {
-    const isAuth = typeof window !== 'undefined' && sessionStorage.getItem('fzn_admin_auth') === 'true';
-    if (isAuth) {
-      setIsAdminOpen(true);
-    } else {
-      setIsAuthModalOpen(true);
-    }
+    const isAuth =
+      sessionStorage.getItem('fzn_owner_auth') === 'true' ||
+      localStorage.getItem('fzn_owner_auth_remember') === 'true';
+
+    setViewMode(isAuth ? 'admin_portal' : 'admin_login');
+  };
+
+  const handleLogout = () => {
+    sessionStorage.removeItem('fzn_owner_auth');
+    localStorage.removeItem('fzn_owner_auth_remember');
+    setViewMode('public');
   };
 
   const pendingBookingsCount = bookings.filter((b) => b.status === 'Pending').length;
 
+  // 1. FULL PAGE ADMIN LOGIN VIEW
+  if (viewMode === 'admin_login') {
+    return (
+      <AdminLoginPage
+        onLoginSuccess={() => setViewMode('admin_portal')}
+        onBackToSite={() => setViewMode('public')}
+      />
+    );
+  }
+
+  // 2. FULL PAGE ADMIN PORTAL VIEW
+  if (viewMode === 'admin_portal') {
+    return (
+      <AdminPortal
+        onLogout={handleLogout}
+        onViewWebsite={() => setViewMode('public')}
+        bookings={bookings}
+        inquiries={inquiries}
+        services={services}
+        galleryItems={galleryItems}
+        customers={customers}
+        invoices={invoices}
+        settings={settings}
+        onRefreshData={refreshDatabase}
+      />
+    );
+  }
+
+  // 3. PUBLIC WEBSITE VIEW
   return (
     <div className="min-h-screen flex flex-col bg-[#FAF8F5] text-stone-800 antialiased selection:bg-rose-200 selection:text-rose-950 font-sans">
-      {/* Top Navbar adhering to the Top Bar contract */}
+      {/* Top Navbar */}
       <Navbar
         onOpenBooking={() => handleOpenBooking()}
         onOpenAdmin={handleOpenAdmin}
@@ -206,26 +275,7 @@ export default function App() {
         onBookingCreated={() => refreshDatabase()}
       />
 
-      {/* 2FA Security Authentication Modal */}
-      <AdminAuthModal
-        isOpen={isAuthModalOpen}
-        onClose={() => setIsAuthModalOpen(false)}
-        onAuthenticated={() => setIsAdminOpen(true)}
-      />
-
-      {/* Admin Management Dashboard */}
-      <AdminDashboard
-        isOpen={isAdminOpen}
-        onClose={() => setIsAdminOpen(false)}
-        onLogout={() => setIsAdminOpen(false)}
-        bookings={bookings}
-        inquiries={inquiries}
-        services={services}
-        galleryItems={galleryItems}
-        onRefreshData={refreshDatabase}
-      />
-
-      {/* Floating Call & WhatsApp Bar (<15% mobile viewport) */}
+      {/* Floating Call & WhatsApp Bar */}
       <FloatingContactBar
         onOpenBooking={() => handleOpenBooking()}
       />

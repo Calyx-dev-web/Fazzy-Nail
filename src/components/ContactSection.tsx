@@ -313,7 +313,7 @@ export const ContactSection: React.FC<ContactSectionProps> = ({ onInquirySubmitt
               <div className="w-full h-72 rounded-2xl overflow-hidden border border-stone-200 shadow-inner bg-stone-200 relative">
                 <iframe
                   title="Fazzynails Google Map Location"
-                  src={BUSINESS_INFO.googleMapsEmbedUrl}
+                  src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d15865.178496417778!2d7.545!3d6.216!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x1044a72d73c1d427%3A0x7d28766100234789!2sAgbani%2C%20Enugu!5e0!3m2!1sen!2sng!4v1700000000000!5m2!1sen!2sng"
                   className="w-full h-full border-0"
                   loading="lazy"
                   referrerPolicy="no-referrer-when-downgrade"

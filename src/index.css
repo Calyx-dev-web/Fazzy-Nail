@@ -3,19 +3,40 @@
 @theme {
   --font-serif: "Cormorant Garamond", Georgia, serif;
   --font-sans: "Plus Jakarta Sans", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  
+  --color-champagne-bg: #F8F3EC;
+  --color-champagne-card: #FFFCF8;
+  --color-champagne-border: #E8D8C7;
+  --color-champagne-gold: #B88746;
+  --color-dusty-rose: #B76E79;
+  --color-deep-espresso: #30231F;
+  --color-warm-taupe: #88766F;
 }
 
 @layer base {
   body {
     font-family: var(--font-sans);
-    color: #292524;
-    background-color: #FAF8F5;
+    color: #30231F;
+    background-color: #F8F3EC;
   }
   
-  h1, h2, h3, .font-editorial {
+  h1, h2, h3, h4, .font-editorial {
     font-family: var(--font-serif);
   }
 }
+
+/* Custom luxury beauty styles & animations */
+.bg-champagne-bg { background-color: #F8F3EC; }
+.bg-champagne-card { background-color: #FFFCF8; }
+.border-champagne { border-color: #E8D8C7; }
+.text-espresso { color: #30231F; }
+.text-taupe { color: #88766F; }
+.text-gold { color: #B88746; }
+.bg-gold { background-color: #B88746; }
+.border-gold { border-color: #B88746; }
+.text-rose { color: #B76E79; }
+.bg-rose { background-color: #B76E79; }
+.border-rose { border-color: #B76E79; }
 
 /* Custom smooth transitions & scrollbar styling */
 ::-webkit-scrollbar {
@@ -23,12 +44,12 @@
   height: 6px;
 }
 ::-webkit-scrollbar-track {
-  background: #FAF8F5;
+  background: #F8F3EC;
 }
 ::-webkit-scrollbar-thumb {
-  background: #E7E5E4;
+  background: #E8D8C7;
   border-radius: 9999px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: #D6D3D1;
+  background: #B88746;
 }

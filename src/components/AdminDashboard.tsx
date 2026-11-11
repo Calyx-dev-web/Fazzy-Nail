@@ -1328,20 +1328,20 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
             </div>
           )}
 
-          {/* TAB 5: SECURITY & 2FA SETTINGS */}
+          {/* TAB 5: PASSCODE & SECURITY SETTINGS */}
           {activeTab === 'security' && (
             <div className="space-y-6 max-w-3xl">
               <div>
                 <h3 className="font-editorial text-xl font-bold text-stone-900 flex items-center gap-2">
                   <ShieldCheck className="w-5 h-5 text-emerald-600" />
-                  <span>Two-Factor Authentication (2FA) & Security Settings</span>
+                  <span>Admin Passcode & Security Settings</span>
                 </h3>
                 <p className="text-xs text-stone-500">
-                  Manage the cryptographic access credentials protecting all customer bookings, inquiries, and salon pricing data.
+                  Manage the security passcode protecting all customer appointments, inquiries, and salon pricing data.
                 </p>
               </div>
 
-              {/* 2FA Protection Status Card */}
+              {/* Security Status Card */}
               <div className="p-5 rounded-2xl bg-white border border-stone-200/90 shadow-2xs space-y-4">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3">
@@ -1349,38 +1349,27 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                       <Lock className="w-5 h-5" />
                     </div>
                     <div>
-                      <h4 className="font-bold text-sm text-stone-900">2-Factor Authentication Status</h4>
+                      <h4 className="font-bold text-sm text-stone-900">Admin Authentication</h4>
                       <span className="text-xs text-emerald-700 font-semibold flex items-center gap-1">
-                        <CheckCircle2 className="w-3.5 h-3.5" /> Enforced & Active on all Admin Logins
+                        <CheckCircle2 className="w-3.5 h-3.5" /> Passcode Protection Active
                       </span>
                     </div>
                   </div>
 
                   <span className="px-3 py-1 bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs font-semibold rounded-full">
-                    Strict Multi-Factor Mode
+                    Protected
                   </span>
-                </div>
-
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2 text-xs">
-                  <div className="p-3 bg-stone-50 rounded-xl border border-stone-200/80 space-y-1">
-                    <span className="font-bold text-stone-800 block">Factor 1: Master PIN</span>
-                    <p className="text-stone-500">Protects against unauthorized local browser access.</p>
-                  </div>
-                  <div className="p-3 bg-stone-50 rounded-xl border border-stone-200/80 space-y-1">
-                    <span className="font-bold text-stone-800 block">Factor 2: Live WhatsApp OTP / TOTP</span>
-                    <p className="text-stone-500">Rotating 60s dynamic code broadcast to {BUSINESS_INFO.phone}.</p>
-                  </div>
                 </div>
               </div>
 
-              {/* Change Security PIN */}
+              {/* Change Security Passcode */}
               <div className="p-5 rounded-2xl bg-white border border-stone-200/90 shadow-2xs space-y-4">
                 <h4 className="font-bold text-sm text-stone-900 flex items-center gap-2">
                   <KeyRound className="w-4 h-4 text-stone-700" />
-                  <span>Update Admin Master PIN</span>
+                  <span>Update Administrator Passcode</span>
                 </h4>
                 <p className="text-xs text-stone-500">
-                  The default master PIN is <strong>7540</strong> (the last 4 digits of your business phone). You can customize it below.
+                  Customize your administrator passcode below. It will be required on your next login.
                 </p>
 
                 {pinChangeMsg && (
@@ -1392,11 +1381,11 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                 <div className="flex flex-col sm:flex-row items-stretch sm:items-end gap-3 text-xs">
                   <div className="flex-1">
                     <label className="block font-semibold text-stone-700 mb-1">
-                      New Security PIN (4 to 8 digits)
+                      New Passcode (min 4 characters)
                     </label>
                     <input
                       type="password"
-                      placeholder="Enter new PIN"
+                      placeholder="Enter new admin passcode"
                       value={newPinInput}
                       onChange={(e) => setNewPinInput(e.target.value)}
                       className="w-full px-4 py-2.5 bg-stone-50 border border-stone-300 rounded-xl font-mono text-sm tracking-widest text-stone-900"
@@ -1406,30 +1395,19 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                   <button
                     type="button"
                     onClick={() => {
-                      if (!newPinInput.trim() || newPinInput.length < 4) {
-                        alert('PIN must be at least 4 digits');
+                      if (!newPinInput.trim() || newPinInput.trim().length < 4) {
+                        alert('Passcode must be at least 4 characters');
                         return;
                       }
                       localStorage.setItem('fzn_custom_admin_pin', newPinInput.trim());
-                      setPinChangeMsg('Admin PIN successfully updated! It will be required on your next login.');
+                      setPinChangeMsg('Admin passcode successfully updated!');
                       setNewPinInput('');
                       setTimeout(() => setPinChangeMsg(''), 4000);
                     }}
                     className="px-5 py-2.5 bg-stone-900 hover:bg-stone-800 text-white font-semibold rounded-xl text-xs shadow-xs cursor-pointer"
                   >
-                    Save New PIN
+                    Save Passcode
                   </button>
-                </div>
-              </div>
-
-              {/* Emergency Recovery Codes */}
-              <div className="p-5 rounded-2xl bg-stone-100/80 border border-stone-200 space-y-2 text-xs">
-                <h4 className="font-bold text-stone-900">Emergency Backup Recovery Key</h4>
-                <p className="text-stone-600">
-                  If you cannot access your WhatsApp phone, you can bypass Factor 2 using the master recovery key:
-                </p>
-                <div className="inline-block p-2.5 bg-white border border-stone-300 rounded-lg font-mono text-xs font-bold text-stone-800 tracking-wider">
-                  FN-SEC-990142
                 </div>
               </div>
             </div>

@@ -68,12 +68,12 @@ export const HeroSection: React.FC<HeroSectionProps> = ({ onOpenBooking, onSelec
             </div>
 
             {/* CTAs: Booking, WhatsApp, Call & Emergency */}
-            <div className="pt-2 flex flex-wrap items-center gap-3">
+            <div className="pt-2 flex flex-col sm:flex-row flex-wrap items-stretch sm:items-center gap-2.5 sm:gap-3 w-full max-w-full">
               <button
                 onClick={onOpenBooking}
-                className="inline-flex items-center justify-center gap-2 px-6 py-3.5 text-sm font-semibold text-white bg-stone-900 hover:bg-stone-800 active:scale-[0.98] rounded-xl shadow-md transition-all cursor-pointer"
+                className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-5 sm:px-6 py-3 sm:py-3.5 text-xs sm:text-sm font-semibold text-white bg-stone-900 hover:bg-stone-800 active:scale-[0.98] rounded-xl shadow-md transition-all cursor-pointer"
               >
-                <Calendar className="w-4 h-4 text-rose-300" />
+                <Calendar className="w-4 h-4 text-rose-300 shrink-0" />
                 <span>Book Service Online</span>
               </button>
 
@@ -81,23 +81,23 @@ export const HeroSection: React.FC<HeroSectionProps> = ({ onOpenBooking, onSelec
                 href={getWhatsAppUrl("Hello Fazzynails, I want to book a nail session with you!")}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex items-center justify-center gap-2 px-5 py-3.5 text-sm font-semibold text-emerald-950 bg-emerald-100 hover:bg-emerald-200 border border-emerald-300 rounded-xl transition-all shadow-xs"
+                className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-4 sm:px-5 py-3 sm:py-3.5 text-xs sm:text-sm font-semibold text-emerald-950 bg-emerald-100 hover:bg-emerald-200 border border-emerald-300 rounded-xl transition-all shadow-xs"
               >
-                <MessageSquare className="w-4 h-4 text-emerald-700" />
+                <MessageSquare className="w-4 h-4 text-emerald-700 shrink-0" />
                 <span>Chat on WhatsApp</span>
               </a>
 
               <a
                 href={`tel:${BUSINESS_INFO.phoneClean}`}
-                className="inline-flex items-center justify-center gap-2 px-4 py-3.5 text-sm font-medium text-stone-800 bg-white hover:bg-stone-50 border border-stone-200 rounded-xl transition-all shadow-xs"
+                className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-4 py-3 sm:py-3.5 text-xs sm:text-sm font-medium text-stone-800 bg-white hover:bg-stone-50 border border-stone-200 rounded-xl transition-all shadow-xs"
               >
-                <Phone className="w-4 h-4 text-stone-600" />
+                <Phone className="w-4 h-4 text-stone-600 shrink-0" />
                 <span className="font-mono text-xs">{BUSINESS_INFO.phone}</span>
               </a>
             </div>
 
             {/* Trust Markers */}
-            <div className="pt-4 border-t border-stone-200/80 flex flex-wrap items-center gap-6 text-xs text-stone-600">
+            <div className="pt-4 border-t border-stone-200/80 flex flex-wrap items-center gap-4 sm:gap-6 text-xs text-stone-600">
               <div className="flex items-center gap-1.5">
                 <div className="flex text-amber-500">
                   {[...Array(5)].map((_, i) => (
@@ -106,23 +106,23 @@ export const HeroSection: React.FC<HeroSectionProps> = ({ onOpenBooking, onSelec
                 </div>
                 <span className="font-semibold text-stone-900">4.9 / 5.0</span>
                 <span className="text-stone-400">·</span>
-                <span>350+ Happy Clients</span>
+                <span>Satisfied Clients</span>
               </div>
 
               <div className="flex items-center gap-1.5">
                 <CheckCircle2 className="w-4 h-4 text-emerald-600" />
-                <span>Autoclave Sterilized Tools</span>
+                <span>Sterilized Tools</span>
               </div>
 
               <div className="flex items-center gap-1.5">
                 <Clock className="w-4 h-4 text-rose-600" />
-                <span>Emergency Slots Available</span>
+                <span>Same-Day Appointments</span>
               </div>
             </div>
           </div>
 
           {/* Right Column: Hero Visual Asset */}
-          <div className="lg:col-span-5 relative">
+          <div className="lg:col-span-5 relative max-w-full overflow-hidden">
             <div className="relative mx-auto max-w-md lg:max-w-none">
               {/* Outer decorative ring */}
               <div className="relative rounded-3xl overflow-hidden border border-stone-200/90 shadow-2xl bg-white aspect-[4/3] lg:aspect-[5/6]">
@@ -137,28 +137,28 @@ export const HeroSection: React.FC<HeroSectionProps> = ({ onOpenBooking, onSelec
                 <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-transparent pointer-events-none" />
 
                 {/* Floating overlay chip on image */}
-                <div className="absolute bottom-4 left-4 right-4 p-4 rounded-xl bg-white/95 backdrop-blur-md border border-white/40 shadow-lg flex items-center justify-between gap-3">
+                <div className="absolute bottom-3 left-3 right-3 p-3 sm:p-4 rounded-xl bg-white/95 backdrop-blur-md border border-white/40 shadow-lg flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2.5 max-w-full">
                   <div>
                     <div className="text-[10px] uppercase font-bold tracking-widest text-rose-700">
                       Signature Quality
                     </div>
-                    <div className="font-editorial text-lg font-semibold text-stone-900">
+                    <div className="font-editorial text-base sm:text-lg font-semibold text-stone-900 leading-tight">
                       Bespoke Acrylics & Gel
                     </div>
-                    <div className="text-xs text-stone-500">
-                      Lasts 4+ weeks with zero chipping
+                    <div className="text-[11px] text-stone-500">
+                      Long-lasting luxury finish
                     </div>
                   </div>
 
                   <a
-                    href={getWhatsAppUrl("Hello Fazzynails, I'd like to book an emergency nail set!")}
+                    href={getWhatsAppUrl("Hello Fazzynails, I'd like to book an appointment slot!")}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="shrink-0 p-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg transition-transform active:scale-95 shadow-sm flex items-center gap-1 text-xs font-semibold"
-                    title="WhatsApp Emergency Inquiries"
+                    className="shrink-0 p-2 sm:p-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg transition-transform active:scale-95 shadow-sm flex items-center gap-1 text-xs font-semibold"
+                    title="WhatsApp Direct Contact"
                   >
-                    <MessageSquare className="w-4 h-4" />
-                    <span>Emergency</span>
+                    <MessageSquare className="w-3.5 h-3.5" />
+                    <span>WhatsApp</span>
                   </a>
                 </div>
               </div>
