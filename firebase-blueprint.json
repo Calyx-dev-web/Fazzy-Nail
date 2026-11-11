@@ -1,0 +1,180 @@
+{
+  "entities": {
+    "BusinessSettings": {
+      "title": "BusinessSettings",
+      "description": "Studio branding, contact info, and hero settings for Fazzy Nails.",
+      "type": "object",
+      "properties": {
+        "name": { "type": "string", "maxLength": 100 },
+        "ownerName": { "type": "string", "maxLength": 100 },
+        "ownerEmail": { "type": "string", "maxLength": 150 },
+        "motto": { "type": "string", "maxLength": 200 },
+        "phone": { "type": "string", "maxLength": 40 },
+        "phoneClean": { "type": "string", "maxLength": 40 },
+        "whatsappRaw": { "type": "string", "maxLength": 30 },
+        "whatsappUrl": { "type": "string", "maxLength": 250 },
+        "facebookUrl": { "type": "string", "maxLength": 250 },
+        "email": { "type": "string", "maxLength": 150 },
+        "address": { "type": "string", "maxLength": 250 },
+        "hours": { "type": "string", "maxLength": 200 },
+        "logoUrl": { "type": "string", "maxLength": 500000 },
+        "profileImage": { "type": "string", "maxLength": 500000 },
+        "heroTitle": { "type": "string", "maxLength": 200 },
+        "heroSubtitle": { "type": "string", "maxLength": 600 },
+        "announcement": { "type": "string", "maxLength": 300 }
+      },
+      "required": ["name", "ownerName", "phone", "email"]
+    },
+    "NailService": {
+      "title": "NailService",
+      "description": "Nail studio service and pricing entry.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "maxLength": 128 },
+        "name": { "type": "string", "maxLength": 120 },
+        "category": { "type": "string", "enum": ["gel", "acrylic", "biab", "care", "addons"] },
+        "price": { "type": "number" },
+        "duration": { "type": "string", "maxLength": 50 },
+        "description": { "type": "string", "maxLength": 500 },
+        "popular": { "type": "boolean" },
+        "isAvailable": { "type": "boolean" }
+      },
+      "required": ["id", "name", "category", "price", "duration", "description", "isAvailable"]
+    },
+    "GalleryItem": {
+      "title": "GalleryItem",
+      "description": "Portfolio lookbook gallery item.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "maxLength": 128 },
+        "title": { "type": "string", "maxLength": 120 },
+        "category": { "type": "string", "enum": ["acrylic", "gel", "nailart", "minimal", "bridal"] },
+        "imageUrl": { "type": "string", "maxLength": 500000 },
+        "description": { "type": "string", "maxLength": 500 },
+        "featured": { "type": "boolean" },
+        "createdAt": { "type": "string", "maxLength": 64 }
+      },
+      "required": ["id", "title", "category", "imageUrl", "description", "createdAt"]
+    },
+    "Booking": {
+      "title": "Booking",
+      "description": "Client appointment booking.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "maxLength": 128 },
+        "customerName": { "type": "string", "maxLength": 120 },
+        "phone": { "type": "string", "maxLength": 40 },
+        "email": { "type": "string", "maxLength": 150 },
+        "serviceId": { "type": "string", "maxLength": 128 },
+        "serviceName": { "type": "string", "maxLength": 120 },
+        "price": { "type": "number" },
+        "date": { "type": "string", "maxLength": 32 },
+        "time": { "type": "string", "maxLength": 32 },
+        "nailShape": { "type": "string", "maxLength": 50 },
+        "nailLength": { "type": "string", "maxLength": 50 },
+        "notes": { "type": "string", "maxLength": 500 },
+        "status": { "type": "string", "enum": ["Pending", "Confirmed", "Completed", "Cancelled"] },
+        "createdAt": { "type": "string", "maxLength": 64 }
+      },
+      "required": ["id", "customerName", "phone", "serviceId", "serviceName", "price", "date", "time", "nailShape", "nailLength", "status", "createdAt"]
+    },
+    "Inquiry": {
+      "title": "Inquiry",
+      "description": "Contact form message from a visitor.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "maxLength": 128 },
+        "name": { "type": "string", "maxLength": 120 },
+        "phone": { "type": "string", "maxLength": 40 },
+        "email": { "type": "string", "maxLength": 150 },
+        "subject": { "type": "string", "maxLength": 200 },
+        "message": { "type": "string", "maxLength": 1000 },
+        "timestamp": { "type": "string", "maxLength": 64 },
+        "status": { "type": "string", "enum": ["Unread", "Replied"] }
+      },
+      "required": ["id", "name", "phone", "email", "subject", "message", "timestamp", "status"]
+    },
+    "Review": {
+      "title": "Review",
+      "description": "Client testimonial/review.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "maxLength": 128 },
+        "name": { "type": "string", "maxLength": 120 },
+        "rating": { "type": "number" },
+        "service": { "type": "string", "maxLength": 120 },
+        "comment": { "type": "string", "maxLength": 800 },
+        "date": { "type": "string", "maxLength": 64 },
+        "verified": { "type": "boolean" }
+      },
+      "required": ["id", "name", "rating", "service", "comment", "date", "verified"]
+    },
+    "Customer": {
+      "title": "Customer",
+      "description": "CRM customer record.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "maxLength": 128 },
+        "name": { "type": "string", "maxLength": 120 },
+        "phone": { "type": "string", "maxLength": 40 },
+        "email": { "type": "string", "maxLength": 150 },
+        "notes": { "type": "string", "maxLength": 500 },
+        "createdAt": { "type": "string", "maxLength": 64 },
+        "totalSpent": { "type": "number" },
+        "appointmentCount": { "type": "number" },
+        "lastVisit": { "type": "string", "maxLength": 64 }
+      },
+      "required": ["id", "name", "phone", "email", "createdAt", "totalSpent", "appointmentCount"]
+    },
+    "Invoice": {
+      "title": "Invoice",
+      "description": "Client billing invoice.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "maxLength": 128 },
+        "customerName": { "type": "string", "maxLength": 120 },
+        "customerPhone": { "type": "string", "maxLength": 40 },
+        "serviceDescription": { "type": "string", "maxLength": 300 },
+        "amount": { "type": "number" },
+        "date": { "type": "string", "maxLength": 32 },
+        "status": { "type": "string", "enum": ["Paid", "Unpaid"] },
+        "paymentMethod": { "type": "string", "maxLength": 80 }
+      },
+      "required": ["id", "customerName", "customerPhone", "serviceDescription", "amount", "date", "status"]
+    }
+  },
+  "firestore": {
+    "/settings/{settingId}": {
+      "schema": { "$ref": "#/entities/BusinessSettings" },
+      "description": "Publicly readable studio settings; writable only by signed-in admin."
+    },
+    "/services/{serviceId}": {
+      "schema": { "$ref": "#/entities/NailService" },
+      "description": "Publicly readable nail services; writable only by signed-in admin."
+    },
+    "/gallery/{galleryId}": {
+      "schema": { "$ref": "#/entities/GalleryItem" },
+      "description": "Publicly readable lookbook gallery; writable only by signed-in admin."
+    },
+    "/reviews/{reviewId}": {
+      "schema": { "$ref": "#/entities/Review" },
+      "description": "Publicly readable and submittable client reviews; manageable by signed-in admin."
+    },
+    "/bookings/{bookingId}": {
+      "schema": { "$ref": "#/entities/Booking" },
+      "description": "Appointments creatable by public visitors; readable/manageable by signed-in admin."
+    },
+    "/inquiries/{inquiryId}": {
+      "schema": { "$ref": "#/entities/Inquiry" },
+      "description": "Contact inquiries creatable by public visitors; readable/manageable by signed-in admin."
+    },
+    "/customers/{customerId}": {
+      "schema": { "$ref": "#/entities/Customer" },
+      "description": "Private CRM customer records; accessible only by signed-in admin."
+    },
+    "/invoices/{invoiceId}": {
+      "schema": { "$ref": "#/entities/Invoice" },
+      "description": "Private billing invoices; accessible only by signed-in admin."
+    }
+  }
+}

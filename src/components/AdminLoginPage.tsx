@@ -8,8 +8,9 @@ import {
   browserSessionPersistence,
   GoogleAuthProvider,
   signInWithPopup,
+  signOut,
 } from 'firebase/auth';
-import { auth } from '../firebase';
+import { auth, isAuthorizedAdminEmail } from '../firebase';
 import { getBusinessSettings, saveBusinessSettings } from '../services/db';
 import { IMAGES, resolveImageUrl } from '../assets/images';
 
@@ -124,10 +125,17 @@ export const AdminLoginPage: React.FC<AdminLoginPageProps> = ({
       await setPersistence(auth, rememberMe ? browserLocalPersistence : browserSessionPersistence);
       const provider = new GoogleAuthProvider();
       const result = await signInWithPopup(auth, provider);
+      const currentSettings = await getBusinessSettings().catch(() => undefined);
 
-      if (result.user?.email) {
+      if (!isAuthorizedAdminEmail(result.user?.email, currentSettings?.ownerEmail)) {
+        await signOut(auth);
+        setIsLoading(false);
+        setErrorMsg('Access denied. Only the authorized studio admin can sign in.');
+        return;
+      }
+
+      if (result.user?.email && currentSettings) {
         try {
-          const currentSettings = await getBusinessSettings();
           await saveBusinessSettings({
             ...currentSettings,
             ownerEmail: result.user.email,

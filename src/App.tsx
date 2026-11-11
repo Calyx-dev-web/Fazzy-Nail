@@ -127,7 +127,7 @@ export default function App() {
     return () => {
       window.removeEventListener(DB_CHANGE_EVENT, handleDbChange);
     };
-  }, [refreshDatabase]);
+  }, [refreshDatabase, firebaseUser]);
 
   // Handlers
   const handleOpenBooking = (service?: NailService) => {

@@ -1,4 +1,13 @@
 import {
+  collection,
+  doc,
+  getDoc,
+  getDocs,
+  setDoc,
+  deleteDoc,
+} from 'firebase/firestore';
+import { auth, db as firestoreDb } from '../firebase';
+import {
   Booking,
   Inquiry,
   NailService,
@@ -23,6 +32,68 @@ const DB_VERSION = 2;
 
 export const DB_CHANGE_EVENT = 'fazzy_nails_db_updated';
 
+enum OperationType {
+  CREATE = 'create',
+  UPDATE = 'update',
+  DELETE = 'delete',
+  LIST = 'list',
+  GET = 'get',
+  WRITE = 'write',
+}
+
+interface FirestoreErrorInfo {
+  error: string;
+  operationType: OperationType;
+  path: string | null;
+  authInfo: {
+    userId?: string | null;
+    email?: string | null;
+    emailVerified?: boolean | null;
+    isAnonymous?: boolean | null;
+    tenantId?: string | null;
+    providerInfo?: {
+      providerId?: string | null;
+      email?: string | null;
+    }[];
+  };
+}
+
+function handleFirestoreError(
+  error: unknown,
+  operationType: OperationType,
+  path: string | null
+): never {
+  const errInfo: FirestoreErrorInfo = {
+    error: error instanceof Error ? error.message : String(error),
+    authInfo: {
+      userId: auth.currentUser?.uid,
+      email: auth.currentUser?.email,
+      emailVerified: auth.currentUser?.emailVerified,
+      isAnonymous: auth.currentUser?.isAnonymous,
+      tenantId: auth.currentUser?.tenantId,
+      providerInfo:
+        auth.currentUser?.providerData?.map((provider) => ({
+          providerId: provider.providerId,
+          email: provider.email,
+        })) || [],
+    },
+    operationType,
+    path,
+  };
+  console.error('Firestore Error: ', JSON.stringify(errInfo));
+  throw new Error(JSON.stringify(errInfo));
+}
+
+function stripUndefined<T extends Record<string, unknown>>(obj: T): T {
+  const clean: Record<string, unknown> = {};
+  for (const [key, value] of Object.entries(obj)) {
+    if (value !== undefined) {
+      clean[key] = value;
+    }
+  }
+  return clean as T;
+}
+
 function openDatabase(): Promise<IDBDatabase> {
   return new Promise((resolve, reject) => {
     if (typeof window === 'undefined' || !window.indexedDB) {
@@ -33,41 +104,41 @@ function openDatabase(): Promise<IDBDatabase> {
     const request = indexedDB.open(DB_NAME, DB_VERSION);
 
     request.onupgradeneeded = (event) => {
-      const db = (event.target as IDBOpenDBRequest).result;
+      const idb = (event.target as IDBOpenDBRequest).result;
 
-      if (!db.objectStoreNames.contains('bookings')) {
-        const store = db.createObjectStore('bookings', { keyPath: 'id' });
+      if (!idb.objectStoreNames.contains('bookings')) {
+        const store = idb.createObjectStore('bookings', { keyPath: 'id' });
         store.createIndex('createdAt', 'createdAt', { unique: false });
         store.createIndex('status', 'status', { unique: false });
       }
 
-      if (!db.objectStoreNames.contains('inquiries')) {
-        const store = db.createObjectStore('inquiries', { keyPath: 'id' });
+      if (!idb.objectStoreNames.contains('inquiries')) {
+        const store = idb.createObjectStore('inquiries', { keyPath: 'id' });
         store.createIndex('timestamp', 'timestamp', { unique: false });
       }
 
-      if (!db.objectStoreNames.contains('services')) {
-        db.createObjectStore('services', { keyPath: 'id' });
+      if (!idb.objectStoreNames.contains('services')) {
+        idb.createObjectStore('services', { keyPath: 'id' });
       }
 
-      if (!db.objectStoreNames.contains('gallery')) {
-        db.createObjectStore('gallery', { keyPath: 'id' });
+      if (!idb.objectStoreNames.contains('gallery')) {
+        idb.createObjectStore('gallery', { keyPath: 'id' });
       }
 
-      if (!db.objectStoreNames.contains('reviews')) {
-        db.createObjectStore('reviews', { keyPath: 'id' });
+      if (!idb.objectStoreNames.contains('reviews')) {
+        idb.createObjectStore('reviews', { keyPath: 'id' });
       }
 
-      if (!db.objectStoreNames.contains('customers')) {
-        db.createObjectStore('customers', { keyPath: 'id' });
+      if (!idb.objectStoreNames.contains('customers')) {
+        idb.createObjectStore('customers', { keyPath: 'id' });
       }
 
-      if (!db.objectStoreNames.contains('invoices')) {
-        db.createObjectStore('invoices', { keyPath: 'id' });
+      if (!idb.objectStoreNames.contains('invoices')) {
+        idb.createObjectStore('invoices', { keyPath: 'id' });
       }
 
-      if (!db.objectStoreNames.contains('settings')) {
-        db.createObjectStore('settings', { keyPath: 'id' });
+      if (!idb.objectStoreNames.contains('settings')) {
+        idb.createObjectStore('settings', { keyPath: 'id' });
       }
     };
 
@@ -82,42 +153,97 @@ function notifyDataChanged(storeName: string) {
   }
 }
 
+async function idbGetAll<T>(storeName: string): Promise<T[]> {
+  const idb = await openDatabase();
+  return new Promise((resolve, reject) => {
+    const tx = idb.transaction(storeName, 'readonly');
+    const store = tx.objectStore(storeName);
+    const req = store.getAll();
+    req.onsuccess = () => resolve((req.result as T[]) || []);
+    req.onerror = () => reject(req.error);
+  });
+}
+
+async function idbPut<T>(storeName: string, item: T): Promise<void> {
+  const idb = await openDatabase();
+  return new Promise((resolve, reject) => {
+    const tx = idb.transaction(storeName, 'readwrite');
+    const store = tx.objectStore(storeName);
+    const req = store.put(item);
+    req.onsuccess = () => resolve();
+    req.onerror = () => reject(req.error);
+  });
+}
+
+async function idbDelete(storeName: string, id: string): Promise<void> {
+  const idb = await openDatabase();
+  return new Promise((resolve, reject) => {
+    const tx = idb.transaction(storeName, 'readwrite');
+    const store = tx.objectStore(storeName);
+    const req = store.delete(id);
+    req.onsuccess = () => resolve();
+    req.onerror = () => reject(req.error);
+  });
+}
+
 // ----------------- BUSINESS SETTINGS -----------------
 export async function getBusinessSettings(): Promise<BusinessSettings> {
+  let localSettings = getLocalStorageFallbackSingle('fzn_settings', DEFAULT_BUSINESS_SETTINGS);
   try {
-    const db = await openDatabase();
-    return new Promise((resolve) => {
-      const tx = db.transaction('settings', 'readonly');
-      const store = tx.objectStore('settings');
-      const req = store.get('main');
-      req.onsuccess = () => {
-        if (req.result) {
-          resolve({ ...DEFAULT_BUSINESS_SETTINGS, ...req.result });
-        } else {
-          resolve(getLocalStorageFallbackSingle('fzn_settings', DEFAULT_BUSINESS_SETTINGS));
-        }
-      };
-      req.onerror = () => resolve(getLocalStorageFallbackSingle('fzn_settings', DEFAULT_BUSINESS_SETTINGS));
+    const idb = await openDatabase();
+    const idbResult = await new Promise<BusinessSettings | null>((resolve) => {
+      const tx = idb.transaction('settings', 'readonly');
+      const req = tx.objectStore('settings').get('main');
+      req.onsuccess = () => resolve(req.result ? { ...DEFAULT_BUSINESS_SETTINGS, ...req.result } : null);
+      req.onerror = () => resolve(null);
     });
+    if (idbResult) localSettings = idbResult;
   } catch {
-    return getLocalStorageFallbackSingle('fzn_settings', DEFAULT_BUSINESS_SETTINGS);
+    // fallback to localStorage
   }
+
+  try {
+    const snap = await getDoc(doc(firestoreDb, 'settings', 'main'));
+    if (snap.exists()) {
+      const remote = snap.data() as Partial<BusinessSettings>;
+      const merged: BusinessSettings = {
+        ...DEFAULT_BUSINESS_SETTINGS,
+        ...localSettings,
+        ...remote,
+        ownerPassword: localSettings.ownerPassword || DEFAULT_BUSINESS_SETTINGS.ownerPassword,
+      };
+      try {
+        await idbPut('settings', { ...merged, id: 'main' });
+      } catch {
+        // ignore IDB mirror error
+      }
+      saveLocalStorageFallbackSingle('fzn_settings', merged);
+      return merged;
+    }
+  } catch (error) {
+    console.warn('Firestore settings read fallback:', error);
+  }
+
+  return localSettings;
 }
 
 export async function saveBusinessSettings(settings: BusinessSettings): Promise<void> {
   try {
-    const db = await openDatabase();
-    await new Promise<void>((resolve, reject) => {
-      const tx = db.transaction('settings', 'readwrite');
-      const store = tx.objectStore('settings');
-      const req = store.put({ ...settings, id: 'main' });
-      req.onsuccess = () => resolve();
-      req.onerror = () => reject(req.error);
-    });
+    await idbPut('settings', { ...settings, id: 'main' });
   } catch {
-    saveLocalStorageFallbackSingle('fzn_settings', settings);
+    // ignore IDB error
   }
   saveLocalStorageFallbackSingle('fzn_settings', settings);
+
+  if (auth.currentUser) {
+    try {
+      const { ownerPassword: _omitted, ...publicSafeSettings } = settings;
+      await setDoc(doc(firestoreDb, 'settings', 'main'), stripUndefined(publicSafeSettings));
+    } catch (error) {
+      handleFirestoreError(error, OperationType.WRITE, 'settings/main');
+    }
+  }
+
   notifyDataChanged('settings');
 }
 
@@ -139,23 +265,26 @@ export async function resetAdminCredentials(): Promise<BusinessSettings> {
 
 // ----------------- BOOKINGS -----------------
 export async function getBookings(): Promise<Booking[]> {
+  if (auth.currentUser) {
+    try {
+      const snap = await getDocs(collection(firestoreDb, 'bookings'));
+      let items = snap.docs.map((d) => ({ ...d.data(), id: d.id } as Booking));
+      if (items.length === 0 && INITIAL_BOOKINGS.length > 0) {
+        await seedBookings(INITIAL_BOOKINGS);
+        items = INITIAL_BOOKINGS;
+      }
+      items.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+      saveLocalStorageFallback('fzn_bookings', items);
+      return items;
+    } catch (error) {
+      handleFirestoreError(error, OperationType.LIST, 'bookings');
+    }
+  }
+
   try {
-    const db = await openDatabase();
-    return new Promise((resolve) => {
-      const tx = db.transaction('bookings', 'readonly');
-      const store = tx.objectStore('bookings');
-      const request = store.getAll();
-      request.onsuccess = async () => {
-        let items: Booking[] = request.result || [];
-        if (items.length === 0) {
-          await seedBookings(INITIAL_BOOKINGS);
-          items = INITIAL_BOOKINGS;
-        }
-        items.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
-        resolve(items);
-      };
-      request.onerror = () => resolve(getLocalStorageFallback<Booking>('fzn_bookings', INITIAL_BOOKINGS));
-    });
+    let items = await idbGetAll<Booking>('bookings');
+    items.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+    return items;
   } catch {
     return getLocalStorageFallback<Booking>('fzn_bookings', INITIAL_BOOKINGS);
   }
@@ -163,19 +292,19 @@ export async function getBookings(): Promise<Booking[]> {
 
 export async function saveBooking(booking: Booking): Promise<Booking> {
   try {
-    const db = await openDatabase();
-    await new Promise<void>((resolve, reject) => {
-      const tx = db.transaction('bookings', 'readwrite');
-      const store = tx.objectStore('bookings');
-      const request = store.put(booking);
-      request.onsuccess = () => resolve();
-      request.onerror = () => reject(request.error);
-    });
+    await idbPut('bookings', booking);
   } catch {
     const existing = getLocalStorageFallback<Booking>('fzn_bookings', INITIAL_BOOKINGS);
-    const filtered = existing.filter(b => b.id !== booking.id);
+    const filtered = existing.filter((b) => b.id !== booking.id);
     saveLocalStorageFallback('fzn_bookings', [booking, ...filtered]);
   }
+
+  try {
+    await setDoc(doc(firestoreDb, 'bookings', booking.id), stripUndefined({ ...booking }));
+  } catch (error) {
+    handleFirestoreError(error, OperationType.WRITE, `bookings/${booking.id}`);
+  }
+
   notifyDataChanged('bookings');
   return booking;
 }
@@ -186,7 +315,7 @@ export async function addBooking(booking: Booking): Promise<Booking> {
 
 export async function updateBookingStatus(id: string, status: Booking['status']): Promise<void> {
   const bookings = await getBookings();
-  const target = bookings.find(b => b.id === id);
+  const target = bookings.find((b) => b.id === id);
   if (target) {
     target.status = status;
     await saveBooking(target);
@@ -195,49 +324,58 @@ export async function updateBookingStatus(id: string, status: Booking['status'])
 
 export async function deleteBooking(id: string): Promise<void> {
   try {
-    const db = await openDatabase();
-    await new Promise<void>((resolve, reject) => {
-      const tx = db.transaction('bookings', 'readwrite');
-      const store = tx.objectStore('bookings');
-      const request = store.delete(id);
-      request.onsuccess = () => resolve();
-      request.onerror = () => reject(request.error);
-    });
+    await idbDelete('bookings', id);
   } catch {
     const list = getLocalStorageFallback<Booking>('fzn_bookings', INITIAL_BOOKINGS);
-    saveLocalStorageFallback('fzn_bookings', list.filter(b => b.id !== id));
+    saveLocalStorageFallback('fzn_bookings', list.filter((b) => b.id !== id));
   }
+
+  if (auth.currentUser) {
+    try {
+      await deleteDoc(doc(firestoreDb, 'bookings', id));
+    } catch (error) {
+      handleFirestoreError(error, OperationType.DELETE, `bookings/${id}`);
+    }
+  }
+
   notifyDataChanged('bookings');
 }
 
 export async function seedBookings(items: Booking[]): Promise<void> {
-  try {
-    const db = await openDatabase();
-    const tx = db.transaction('bookings', 'readwrite');
-    const store = tx.objectStore('bookings');
-    for (const item of items) {
-      store.put(item);
+  for (const item of items) {
+    try {
+      await idbPut('bookings', item);
+    } catch {
+      // ignore
     }
-  } catch {
-    saveLocalStorageFallback('fzn_bookings', items);
+    if (auth.currentUser) {
+      try {
+        await setDoc(doc(firestoreDb, 'bookings', item.id), stripUndefined({ ...item }));
+      } catch {
+        // ignore
+      }
+    }
   }
 }
 
 // ----------------- INQUIRIES -----------------
 export async function getInquiries(): Promise<Inquiry[]> {
+  if (auth.currentUser) {
+    try {
+      const snap = await getDocs(collection(firestoreDb, 'inquiries'));
+      const items = snap.docs.map((d) => ({ ...d.data(), id: d.id } as Inquiry));
+      items.sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
+      saveLocalStorageFallback('fzn_inquiries', items);
+      return items;
+    } catch (error) {
+      handleFirestoreError(error, OperationType.LIST, 'inquiries');
+    }
+  }
+
   try {
-    const db = await openDatabase();
-    return new Promise((resolve) => {
-      const tx = db.transaction('inquiries', 'readonly');
-      const store = tx.objectStore('inquiries');
-      const request = store.getAll();
-      request.onsuccess = () => {
-        const items: Inquiry[] = request.result || [];
-        items.sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
-        resolve(items);
-      };
-      request.onerror = () => resolve(getLocalStorageFallback<Inquiry>('fzn_inquiries', []));
-    });
+    const items = await idbGetAll<Inquiry>('inquiries');
+    items.sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
+    return items;
   } catch {
     return getLocalStorageFallback<Inquiry>('fzn_inquiries', []);
   }
@@ -245,25 +383,25 @@ export async function getInquiries(): Promise<Inquiry[]> {
 
 export async function addInquiry(inquiry: Inquiry): Promise<Inquiry> {
   try {
-    const db = await openDatabase();
-    await new Promise<void>((resolve, reject) => {
-      const tx = db.transaction('inquiries', 'readwrite');
-      const store = tx.objectStore('inquiries');
-      const request = store.put(inquiry);
-      request.onsuccess = () => resolve();
-      request.onerror = () => reject(request.error);
-    });
+    await idbPut('inquiries', inquiry);
   } catch {
     const existing = getLocalStorageFallback<Inquiry>('fzn_inquiries', []);
     saveLocalStorageFallback('fzn_inquiries', [inquiry, ...existing]);
   }
+
+  try {
+    await setDoc(doc(firestoreDb, 'inquiries', inquiry.id), stripUndefined({ ...inquiry }));
+  } catch (error) {
+    handleFirestoreError(error, OperationType.WRITE, `inquiries/${inquiry.id}`);
+  }
+
   notifyDataChanged('inquiries');
   return inquiry;
 }
 
 export async function updateInquiryStatus(id: string, status: Inquiry['status']): Promise<void> {
   const inquiries = await getInquiries();
-  const target = inquiries.find(i => i.id === id);
+  const target = inquiries.find((i) => i.id === id);
   if (target) {
     target.status = status;
     await addInquiry(target);
@@ -272,39 +410,47 @@ export async function updateInquiryStatus(id: string, status: Inquiry['status'])
 
 export async function deleteInquiry(id: string): Promise<void> {
   try {
-    const db = await openDatabase();
-    await new Promise<void>((resolve, reject) => {
-      const tx = db.transaction('inquiries', 'readwrite');
-      const store = tx.objectStore('inquiries');
-      const request = store.delete(id);
-      request.onsuccess = () => resolve();
-      request.onerror = () => reject(request.error);
-    });
+    await idbDelete('inquiries', id);
   } catch {
     const list = getLocalStorageFallback<Inquiry>('fzn_inquiries', []);
-    saveLocalStorageFallback('fzn_inquiries', list.filter(q => q.id !== id));
+    saveLocalStorageFallback('fzn_inquiries', list.filter((q) => q.id !== id));
   }
+
+  if (auth.currentUser) {
+    try {
+      await deleteDoc(doc(firestoreDb, 'inquiries', id));
+    } catch (error) {
+      handleFirestoreError(error, OperationType.DELETE, `inquiries/${id}`);
+    }
+  }
+
   notifyDataChanged('inquiries');
 }
 
 // ----------------- SERVICES / PRICING -----------------
 export async function getServices(): Promise<NailService[]> {
   try {
-    const db = await openDatabase();
-    return new Promise((resolve) => {
-      const tx = db.transaction('services', 'readonly');
-      const store = tx.objectStore('services');
-      const request = store.getAll();
-      request.onsuccess = async () => {
-        let items: NailService[] = request.result || [];
-        if (items.length === 0) {
-          await seedServices(INITIAL_SERVICES);
-          items = INITIAL_SERVICES;
-        }
-        resolve(items);
-      };
-      request.onerror = () => resolve(INITIAL_SERVICES);
-    });
+    const snap = await getDocs(collection(firestoreDb, 'services'));
+    let items = snap.docs.map((d) => ({ ...d.data(), id: d.id } as NailService));
+    if (items.length === 0) {
+      if (auth.currentUser) {
+        await seedServices(INITIAL_SERVICES);
+      }
+      items = INITIAL_SERVICES;
+    }
+    saveLocalStorageFallback('fzn_services', items);
+    return items;
+  } catch (error) {
+    console.warn('Firestore services read fallback:', error);
+  }
+
+  try {
+    let items = await idbGetAll<NailService>('services');
+    if (items.length === 0) {
+      await seedServices(INITIAL_SERVICES);
+      items = INITIAL_SERVICES;
+    }
+    return items;
   } catch {
     const stored = getLocalStorageFallback<NailService>('fzn_services', INITIAL_SERVICES);
     return stored.length > 0 ? stored : INITIAL_SERVICES;
@@ -313,74 +459,91 @@ export async function getServices(): Promise<NailService[]> {
 
 export async function saveService(service: NailService): Promise<void> {
   try {
-    const db = await openDatabase();
-    await new Promise<void>((resolve, reject) => {
-      const tx = db.transaction('services', 'readwrite');
-      const store = tx.objectStore('services');
-      const request = store.put(service);
-      request.onsuccess = () => resolve();
-      request.onerror = () => reject(request.error);
-    });
+    await idbPut('services', service);
   } catch {
     const existing = getLocalStorageFallback<NailService>('fzn_services', INITIAL_SERVICES);
-    const updated = existing.filter(s => s.id !== service.id);
+    const updated = existing.filter((s) => s.id !== service.id);
     saveLocalStorageFallback('fzn_services', [...updated, service]);
   }
+
+  if (auth.currentUser) {
+    try {
+      await setDoc(doc(firestoreDb, 'services', service.id), stripUndefined({ ...service }));
+    } catch (error) {
+      handleFirestoreError(error, OperationType.WRITE, `services/${service.id}`);
+    }
+  }
+
   notifyDataChanged('services');
 }
 
 export async function deleteService(id: string): Promise<void> {
   try {
-    const db = await openDatabase();
-    await new Promise<void>((resolve, reject) => {
-      const tx = db.transaction('services', 'readwrite');
-      const store = tx.objectStore('services');
-      const request = store.delete(id);
-      request.onsuccess = () => resolve();
-      request.onerror = () => reject(request.error);
-    });
+    await idbDelete('services', id);
   } catch {
     const list = getLocalStorageFallback<NailService>('fzn_services', INITIAL_SERVICES);
-    saveLocalStorageFallback('fzn_services', list.filter(s => s.id !== id));
+    saveLocalStorageFallback('fzn_services', list.filter((s) => s.id !== id));
   }
+
+  if (auth.currentUser) {
+    try {
+      await deleteDoc(doc(firestoreDb, 'services', id));
+    } catch (error) {
+      handleFirestoreError(error, OperationType.DELETE, `services/${id}`);
+    }
+  }
+
   notifyDataChanged('services');
 }
 
 export async function seedServices(services: NailService[]): Promise<void> {
-  try {
-    const db = await openDatabase();
-    const tx = db.transaction('services', 'readwrite');
-    const store = tx.objectStore('services');
-    for (const service of services) {
-      store.put(service);
+  for (const service of services) {
+    try {
+      await idbPut('services', service);
+    } catch {
+      // ignore
     }
-  } catch {
-    saveLocalStorageFallback('fzn_services', services);
+    if (auth.currentUser) {
+      try {
+        await setDoc(doc(firestoreDb, 'services', service.id), stripUndefined({ ...service }));
+      } catch {
+        // ignore
+      }
+    }
   }
 }
 
 // ----------------- GALLERY -----------------
 export async function getGallery(): Promise<GalleryItem[]> {
   try {
-    const db = await openDatabase();
-    return new Promise((resolve) => {
-      const tx = db.transaction('gallery', 'readonly');
-      const store = tx.objectStore('gallery');
-      const request = store.getAll();
-      request.onsuccess = async () => {
-        let items: GalleryItem[] = request.result || [];
-        if (items.length === 0) {
-          await seedGallery(INITIAL_GALLERY);
-          items = INITIAL_GALLERY;
-        }
-        items = items.map((item) => ({
-          ...item,
-          imageUrl: resolveImageUrl(item.imageUrl),
-        }));
-        resolve(items);
-      };
-      request.onerror = () => resolve(INITIAL_GALLERY);
-    });
+    const snap = await getDocs(collection(firestoreDb, 'gallery'));
+    let items = snap.docs.map((d) => ({ ...d.data(), id: d.id } as GalleryItem));
+    if (items.length === 0) {
+      if (auth.currentUser) {
+        await seedGallery(INITIAL_GALLERY);
+      }
+      items = INITIAL_GALLERY;
+    }
+    items = items.map((item) => ({
+      ...item,
+      imageUrl: resolveImageUrl(item.imageUrl),
+    }));
+    saveLocalStorageFallback('fzn_gallery', items);
+    return items;
+  } catch (error) {
+    console.warn('Firestore gallery read fallback:', error);
+  }
+
+  try {
+    let items = await idbGetAll<GalleryItem>('gallery');
+    if (items.length === 0) {
+      await seedGallery(INITIAL_GALLERY);
+      items = INITIAL_GALLERY;
+    }
+    return items.map((item) => ({
+      ...item,
+      imageUrl: resolveImageUrl(item.imageUrl),
+    }));
   } catch {
     const stored = getLocalStorageFallback<GalleryItem>('fzn_gallery', INITIAL_GALLERY);
     return stored.map((item) => ({
@@ -392,70 +555,79 @@ export async function getGallery(): Promise<GalleryItem[]> {
 
 export async function saveGalleryItem(item: GalleryItem): Promise<void> {
   try {
-    const db = await openDatabase();
-    await new Promise<void>((resolve, reject) => {
-      const tx = db.transaction('gallery', 'readwrite');
-      const store = tx.objectStore('gallery');
-      const request = store.put(item);
-      request.onsuccess = () => resolve();
-      request.onerror = () => reject(request.error);
-    });
+    await idbPut('gallery', item);
   } catch {
     const existing = getLocalStorageFallback<GalleryItem>('fzn_gallery', INITIAL_GALLERY);
-    const updated = existing.filter(g => g.id !== item.id);
+    const updated = existing.filter((g) => g.id !== item.id);
     saveLocalStorageFallback('fzn_gallery', [...updated, item]);
   }
+
+  if (auth.currentUser) {
+    try {
+      await setDoc(doc(firestoreDb, 'gallery', item.id), stripUndefined({ ...item }));
+    } catch (error) {
+      handleFirestoreError(error, OperationType.WRITE, `gallery/${item.id}`);
+    }
+  }
+
   notifyDataChanged('gallery');
 }
 
 export async function deleteGalleryItem(id: string): Promise<void> {
   try {
-    const db = await openDatabase();
-    await new Promise<void>((resolve, reject) => {
-      const tx = db.transaction('gallery', 'readwrite');
-      const store = tx.objectStore('gallery');
-      const request = store.delete(id);
-      request.onsuccess = () => resolve();
-      request.onerror = () => reject(request.error);
-    });
+    await idbDelete('gallery', id);
   } catch {
     const list = getLocalStorageFallback<GalleryItem>('fzn_gallery', INITIAL_GALLERY);
-    saveLocalStorageFallback('fzn_gallery', list.filter(g => g.id !== id));
+    saveLocalStorageFallback('fzn_gallery', list.filter((g) => g.id !== id));
   }
+
+  if (auth.currentUser) {
+    try {
+      await deleteDoc(doc(firestoreDb, 'gallery', id));
+    } catch (error) {
+      handleFirestoreError(error, OperationType.DELETE, `gallery/${id}`);
+    }
+  }
+
   notifyDataChanged('gallery');
 }
 
 export async function seedGallery(items: GalleryItem[]): Promise<void> {
-  try {
-    const db = await openDatabase();
-    const tx = db.transaction('gallery', 'readwrite');
-    const store = tx.objectStore('gallery');
-    for (const item of items) {
-      store.put(item);
+  for (const item of items) {
+    try {
+      await idbPut('gallery', item);
+    } catch {
+      // ignore
     }
-  } catch {
-    saveLocalStorageFallback('fzn_gallery', items);
+    if (auth.currentUser) {
+      try {
+        await setDoc(doc(firestoreDb, 'gallery', item.id), stripUndefined({ ...item }));
+      } catch {
+        // ignore
+      }
+    }
   }
 }
 
 // ----------------- CUSTOMERS -----------------
 export async function getCustomers(): Promise<Customer[]> {
+  if (auth.currentUser) {
+    try {
+      const snap = await getDocs(collection(firestoreDb, 'customers'));
+      let items = snap.docs.map((d) => ({ ...d.data(), id: d.id } as Customer));
+      if (items.length === 0 && INITIAL_CUSTOMERS.length > 0) {
+        await seedCustomers(INITIAL_CUSTOMERS);
+        items = INITIAL_CUSTOMERS;
+      }
+      saveLocalStorageFallback('fzn_customers', items);
+      return items;
+    } catch (error) {
+      handleFirestoreError(error, OperationType.LIST, 'customers');
+    }
+  }
+
   try {
-    const db = await openDatabase();
-    return new Promise((resolve) => {
-      const tx = db.transaction('customers', 'readonly');
-      const store = tx.objectStore('customers');
-      const request = store.getAll();
-      request.onsuccess = async () => {
-        let items: Customer[] = request.result || [];
-        if (items.length === 0) {
-          await seedCustomers(INITIAL_CUSTOMERS);
-          items = INITIAL_CUSTOMERS;
-        }
-        resolve(items);
-      };
-      request.onerror = () => resolve(INITIAL_CUSTOMERS);
-    });
+    return await idbGetAll<Customer>('customers');
   } catch {
     return getLocalStorageFallback<Customer>('fzn_customers', INITIAL_CUSTOMERS);
   }
@@ -463,70 +635,79 @@ export async function getCustomers(): Promise<Customer[]> {
 
 export async function saveCustomer(customer: Customer): Promise<void> {
   try {
-    const db = await openDatabase();
-    await new Promise<void>((resolve, reject) => {
-      const tx = db.transaction('customers', 'readwrite');
-      const store = tx.objectStore('customers');
-      const request = store.put(customer);
-      request.onsuccess = () => resolve();
-      request.onerror = () => reject(request.error);
-    });
+    await idbPut('customers', customer);
   } catch {
     const existing = getLocalStorageFallback<Customer>('fzn_customers', INITIAL_CUSTOMERS);
-    const updated = existing.filter(c => c.id !== customer.id);
+    const updated = existing.filter((c) => c.id !== customer.id);
     saveLocalStorageFallback('fzn_customers', [...updated, customer]);
   }
+
+  if (auth.currentUser) {
+    try {
+      await setDoc(doc(firestoreDb, 'customers', customer.id), stripUndefined({ ...customer }));
+    } catch (error) {
+      handleFirestoreError(error, OperationType.WRITE, `customers/${customer.id}`);
+    }
+  }
+
   notifyDataChanged('customers');
 }
 
 export async function deleteCustomer(id: string): Promise<void> {
   try {
-    const db = await openDatabase();
-    await new Promise<void>((resolve, reject) => {
-      const tx = db.transaction('customers', 'readwrite');
-      const store = tx.objectStore('customers');
-      const request = store.delete(id);
-      request.onsuccess = () => resolve();
-      request.onerror = () => reject(request.error);
-    });
+    await idbDelete('customers', id);
   } catch {
     const list = getLocalStorageFallback<Customer>('fzn_customers', INITIAL_CUSTOMERS);
-    saveLocalStorageFallback('fzn_customers', list.filter(c => c.id !== id));
+    saveLocalStorageFallback('fzn_customers', list.filter((c) => c.id !== id));
   }
+
+  if (auth.currentUser) {
+    try {
+      await deleteDoc(doc(firestoreDb, 'customers', id));
+    } catch (error) {
+      handleFirestoreError(error, OperationType.DELETE, `customers/${id}`);
+    }
+  }
+
   notifyDataChanged('customers');
 }
 
 export async function seedCustomers(items: Customer[]): Promise<void> {
-  try {
-    const db = await openDatabase();
-    const tx = db.transaction('customers', 'readwrite');
-    const store = tx.objectStore('customers');
-    for (const item of items) {
-      store.put(item);
+  for (const item of items) {
+    try {
+      await idbPut('customers', item);
+    } catch {
+      // ignore
     }
-  } catch {
-    saveLocalStorageFallback('fzn_customers', items);
+    if (auth.currentUser) {
+      try {
+        await setDoc(doc(firestoreDb, 'customers', item.id), stripUndefined({ ...item }));
+      } catch {
+        // ignore
+      }
+    }
   }
 }
 
 // ----------------- INVOICES -----------------
 export async function getInvoices(): Promise<Invoice[]> {
+  if (auth.currentUser) {
+    try {
+      const snap = await getDocs(collection(firestoreDb, 'invoices'));
+      let items = snap.docs.map((d) => ({ ...d.data(), id: d.id } as Invoice));
+      if (items.length === 0 && INITIAL_INVOICES.length > 0) {
+        await seedInvoices(INITIAL_INVOICES);
+        items = INITIAL_INVOICES;
+      }
+      saveLocalStorageFallback('fzn_invoices', items);
+      return items;
+    } catch (error) {
+      handleFirestoreError(error, OperationType.LIST, 'invoices');
+    }
+  }
+
   try {
-    const db = await openDatabase();
-    return new Promise((resolve) => {
-      const tx = db.transaction('invoices', 'readonly');
-      const store = tx.objectStore('invoices');
-      const request = store.getAll();
-      request.onsuccess = async () => {
-        let items: Invoice[] = request.result || [];
-        if (items.length === 0) {
-          await seedInvoices(INITIAL_INVOICES);
-          items = INITIAL_INVOICES;
-        }
-        resolve(items);
-      };
-      request.onerror = () => resolve(INITIAL_INVOICES);
-    });
+    return await idbGetAll<Invoice>('invoices');
   } catch {
     return getLocalStorageFallback<Invoice>('fzn_invoices', INITIAL_INVOICES);
   }
@@ -534,66 +715,73 @@ export async function getInvoices(): Promise<Invoice[]> {
 
 export async function saveInvoice(invoice: Invoice): Promise<void> {
   try {
-    const db = await openDatabase();
-    await new Promise<void>((resolve, reject) => {
-      const tx = db.transaction('invoices', 'readwrite');
-      const store = tx.objectStore('invoices');
-      const request = store.put(invoice);
-      request.onsuccess = () => resolve();
-      request.onerror = () => reject(request.error);
-    });
+    await idbPut('invoices', invoice);
   } catch {
     const existing = getLocalStorageFallback<Invoice>('fzn_invoices', INITIAL_INVOICES);
-    const updated = existing.filter(i => i.id !== invoice.id);
+    const updated = existing.filter((i) => i.id !== invoice.id);
     saveLocalStorageFallback('fzn_invoices', [...updated, invoice]);
   }
+
+  if (auth.currentUser) {
+    try {
+      await setDoc(doc(firestoreDb, 'invoices', invoice.id), stripUndefined({ ...invoice }));
+    } catch (error) {
+      handleFirestoreError(error, OperationType.WRITE, `invoices/${invoice.id}`);
+    }
+  }
+
   notifyDataChanged('invoices');
 }
 
 export async function deleteInvoice(id: string): Promise<void> {
   try {
-    const db = await openDatabase();
-    await new Promise<void>((resolve, reject) => {
-      const tx = db.transaction('invoices', 'readwrite');
-      const store = tx.objectStore('invoices');
-      const request = store.delete(id);
-      request.onsuccess = () => resolve();
-      request.onerror = () => reject(request.error);
-    });
+    await idbDelete('invoices', id);
   } catch {
     const list = getLocalStorageFallback<Invoice>('fzn_invoices', INITIAL_INVOICES);
-    saveLocalStorageFallback('fzn_invoices', list.filter(i => i.id !== id));
+    saveLocalStorageFallback('fzn_invoices', list.filter((i) => i.id !== id));
   }
+
+  if (auth.currentUser) {
+    try {
+      await deleteDoc(doc(firestoreDb, 'invoices', id));
+    } catch (error) {
+      handleFirestoreError(error, OperationType.DELETE, `invoices/${id}`);
+    }
+  }
+
   notifyDataChanged('invoices');
 }
 
 export async function seedInvoices(items: Invoice[]): Promise<void> {
-  try {
-    const db = await openDatabase();
-    const tx = db.transaction('invoices', 'readwrite');
-    const store = tx.objectStore('invoices');
-    for (const item of items) {
-      store.put(item);
+  for (const item of items) {
+    try {
+      await idbPut('invoices', item);
+    } catch {
+      // ignore
     }
-  } catch {
-    saveLocalStorageFallback('fzn_invoices', items);
+    if (auth.currentUser) {
+      try {
+        await setDoc(doc(firestoreDb, 'invoices', item.id), stripUndefined({ ...item }));
+      } catch {
+        // ignore
+      }
+    }
   }
 }
 
 // ----------------- REVIEWS -----------------
 export async function getReviews(): Promise<Review[]> {
   try {
-    const db = await openDatabase();
-    return new Promise((resolve) => {
-      const tx = db.transaction('reviews', 'readonly');
-      const store = tx.objectStore('reviews');
-      const request = store.getAll();
-      request.onsuccess = async () => {
-        let items: Review[] = request.result || [];
-        resolve(items);
-      };
-      request.onerror = () => resolve([]);
-    });
+    const snap = await getDocs(collection(firestoreDb, 'reviews'));
+    const items = snap.docs.map((d) => ({ ...d.data(), id: d.id } as Review));
+    saveLocalStorageFallback('fzn_reviews', items);
+    return items;
+  } catch (error) {
+    console.warn('Firestore reviews read fallback:', error);
+  }
+
+  try {
+    return await idbGetAll<Review>('reviews');
   } catch {
     return getLocalStorageFallback<Review>('fzn_reviews', []);
   }
@@ -601,18 +789,18 @@ export async function getReviews(): Promise<Review[]> {
 
 export async function addReview(review: Review): Promise<void> {
   try {
-    const db = await openDatabase();
-    await new Promise<void>((resolve, reject) => {
-      const tx = db.transaction('reviews', 'readwrite');
-      const store = tx.objectStore('reviews');
-      const request = store.put(review);
-      request.onsuccess = () => resolve();
-      request.onerror = () => reject(request.error);
-    });
+    await idbPut('reviews', review);
   } catch {
     const existing = getLocalStorageFallback<Review>('fzn_reviews', []);
     saveLocalStorageFallback('fzn_reviews', [review, ...existing]);
   }
+
+  try {
+    await setDoc(doc(firestoreDb, 'reviews', review.id), stripUndefined({ ...review }));
+  } catch (error) {
+    handleFirestoreError(error, OperationType.WRITE, `reviews/${review.id}`);
+  }
+
   notifyDataChanged('reviews');
 }
 
@@ -680,10 +868,24 @@ export async function exportAllData() {
 }
 
 export async function clearAllDataAndResetApp(): Promise<void> {
+  if (auth.currentUser) {
+    const collectionsToClear = ['bookings', 'inquiries', 'services', 'gallery', 'reviews', 'customers', 'invoices'];
+    for (const colName of collectionsToClear) {
+      try {
+        const snap = await getDocs(collection(firestoreDb, colName));
+        for (const d of snap.docs) {
+          await deleteDoc(doc(firestoreDb, colName, d.id));
+        }
+      } catch (error) {
+        console.warn(`Failed clearing Firestore collection ${colName}:`, error);
+      }
+    }
+  }
+
   try {
-    const db = await openDatabase();
+    const idb = await openDatabase();
     const stores = ['bookings', 'inquiries', 'services', 'gallery', 'reviews', 'customers', 'invoices', 'settings'];
-    const tx = db.transaction(stores, 'readwrite');
+    const tx = idb.transaction(stores, 'readwrite');
     for (const storeName of stores) {
       tx.objectStore(storeName).clear();
     }
@@ -706,8 +908,6 @@ export async function clearAllDataAndResetApp(): Promise<void> {
     localStorage.removeItem('fzn_reviews');
   }
 
-  // Reseed clean default services
   await seedServices(INITIAL_SERVICES);
   notifyDataChanged('all');
 }
-
