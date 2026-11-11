@@ -1,5 +1,5 @@
 import React from 'react';
-import { Calendar, Phone, Sparkles, Star, Clock, CheckCircle2, MessageSquare } from 'lucide-react';
+import { Calendar, Phone, MapPin, Star, Clock, CheckCircle2, MessageSquare } from 'lucide-react';
 import { BUSINESS_INFO, getWhatsAppUrl } from '../types';
 import { IMAGES } from '../assets/images';
 
@@ -21,8 +21,8 @@ export const HeroSection: React.FC<HeroSectionProps> = ({ onOpenBooking, onSelec
           <div className="lg:col-span-7 space-y-6">
             {/* Classy kicker */}
             <div className="inline-flex items-center gap-2 px-3 py-1 bg-rose-50 border border-rose-200/60 rounded-full text-xs font-medium text-rose-900">
-              <Sparkles className="w-3.5 h-3.5 text-rose-600" />
-              <span>Boutique Luxury Nail Tech Studio . Agbani Enugu</span>
+              <MapPin className="w-3.5 h-3.5 text-rose-600" />
+              <span>Boutique Luxury Nail Tech Studio · Agbani Enugu</span>
             </div>
 
             {/* Headline with Motto */}

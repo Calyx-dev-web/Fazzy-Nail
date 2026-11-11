@@ -1,7 +1,7 @@
 import React from 'react';
 import { NailService, getWhatsAppUrl } from '../types';
 import { formatPrice } from '../utils/format';
-import { Check, MessageSquare, Calendar, Sparkles } from 'lucide-react';
+import { Check, MessageSquare, Calendar, Award } from 'lucide-react';
 
 interface PricingSectionProps {
   services: NailService[];
@@ -40,7 +40,7 @@ export const PricingSection: React.FC<PricingSectionProps> = ({
               className="relative p-8 rounded-3xl bg-white border-2 border-stone-900 shadow-xl flex flex-col justify-between"
             >
               <div className="absolute -top-3.5 right-6 px-3 py-1 bg-stone-900 text-stone-100 text-[10px] uppercase font-bold tracking-widest rounded-full flex items-center gap-1">
-                <Sparkles className="w-3 h-3 text-rose-400" />
+                <Award className="w-3 h-3 text-amber-300" />
                 <span>Most Requested</span>
               </div>
 

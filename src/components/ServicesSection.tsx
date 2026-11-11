@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { NailService, getWhatsAppUrl } from '../types';
 import { formatPrice } from '../utils/format';
-import { Clock, Sparkles, MessageSquare, ArrowRight } from 'lucide-react';
+import { Clock, Star, MessageSquare, ArrowRight } from 'lucide-react';
 
 interface ServicesSectionProps {
   services: NailService[];
@@ -99,7 +99,7 @@ export const ServicesSection: React.FC<ServicesSectionProps> = ({
                     <>
                       <span>·</span>
                       <span className="text-rose-700 font-medium inline-flex items-center gap-1">
-                        <Sparkles className="w-3 h-3 text-rose-500" /> Client Favorite
+                        <Star className="w-3 h-3 text-amber-500 fill-amber-400" /> Client Favorite
                       </span>
                     </>
                   )}

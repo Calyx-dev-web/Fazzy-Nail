@@ -1,7 +1,7 @@
 import React from 'react';
 import { BUSINESS_INFO, getWhatsAppUrl } from '../types';
 import { IMAGES } from '../assets/images';
-import { Sparkles, Phone, MessageSquare, MapPin, Clock, Shield, ArrowUp, ExternalLink } from 'lucide-react';
+import { Phone, MessageSquare, MapPin, Clock, Shield, ArrowUp, ExternalLink } from 'lucide-react';
 
 interface FooterProps {
   onOpenBooking: () => void;
@@ -29,7 +29,6 @@ export const Footer: React.FC<FooterProps> = ({ onOpenBooking, onOpenAdmin, onNa
               <div>
                 <span className="font-editorial text-2xl font-bold tracking-tight text-white flex items-center gap-1.5">
                   Fazzynails
-                  <Sparkles className="w-4 h-4 text-rose-400" />
                 </span>
                 <span className="text-[10px] tracking-widest uppercase font-medium text-stone-400 block">
                   {BUSINESS_INFO.motto}

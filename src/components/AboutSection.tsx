@@ -33,7 +33,7 @@ export const AboutSection: React.FC = () => {
           {/* About Text Column */}
           <div className="lg:col-span-7 order-1 lg:order-2 space-y-6">
             <div className="inline-flex items-center gap-2 px-3 py-1 bg-rose-50 border border-rose-200/60 rounded-full text-xs font-semibold text-rose-900">
-              <Sparkles className="w-3.5 h-3.5 text-rose-600" />
+              <Heart className="w-3.5 h-3.5 text-rose-600" />
               <span>About Fazzynails</span>
             </div>
 

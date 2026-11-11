@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Phone, Calendar, Menu, X, Shield, Sparkles, MessageSquare } from 'lucide-react';
+import { Phone, Calendar, Menu, X, Shield, MessageSquare } from 'lucide-react';
 import { BUSINESS_INFO, getWhatsAppUrl } from '../types';
 import { IMAGES } from '../assets/images';
 
@@ -88,7 +88,6 @@ export const Navbar: React.FC<NavbarProps> = ({
           <div className="flex flex-col justify-center min-w-0">
             <span className="font-editorial text-lg sm:text-2xl font-bold tracking-tight text-stone-900 flex items-center gap-1 truncate">
               Fazzynails
-              <Sparkles className="w-3.5 h-3.5 text-rose-500 fill-rose-300/40 shrink-0" />
             </span>
             <span className="text-[9px] sm:text-[10px] tracking-wider uppercase font-medium text-stone-500 truncate hidden xs:block">
               {BUSINESS_INFO.motto}

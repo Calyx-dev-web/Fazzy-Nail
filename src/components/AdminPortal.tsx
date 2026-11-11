@@ -97,7 +97,7 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
   onRefreshData,
 }) => {
   const [activeTab, setActiveTab] = useState<TabType>('overview');
-  const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [menuOpen, setMenuOpen] = useState(false);
   const [notificationsOpen, setNotificationsOpen] = useState(false);
   const [toastNotice, setToastNotice] = useState<string | null>(null);
 
@@ -526,167 +526,209 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
 
       {/* Main Full-Page Portal Layout */}
       <div className="flex flex-1 overflow-hidden relative">
-        {/* COLLAPSIBLE SIDEBAR */}
-        <aside
-          className={`${
-            sidebarOpen ? 'w-64' : 'w-20'
-          } bg-[#30231F] text-[#FFFCF8] transition-all duration-300 flex flex-col shrink-0 z-30 relative shadow-2xl`}
-        >
-          {/* Sidebar Header Brand Lockup */}
-          <div className="p-4 border-b border-[#88766F]/30 flex items-center justify-between">
-            <div className="flex items-center gap-3 overflow-hidden">
-              <img
-                src={settings.logoUrl || IMAGES.logo}
-                alt="Fazzy Nails Logo"
-                className="w-10 h-10 rounded-full object-cover border-2 border-[#B88746] shrink-0"
-              />
-              {sidebarOpen && (
-                <div className="flex flex-col min-w-0">
-                  <span className="font-editorial text-lg font-bold text-[#FFFCF8] truncate leading-tight">
-                    {settings.name}
-                  </span>
-                  <span className="text-[10px] uppercase tracking-widest text-[#B88746] truncate font-medium">
-                    Owner Portal
-                  </span>
+        {/* SANDWICH NAVIGATION DRAWER PANEL */}
+        {menuOpen && (
+          <div className="fixed inset-0 z-50 flex">
+            {/* Backdrop */}
+            <div
+              onClick={() => setMenuOpen(false)}
+              className="fixed inset-0 bg-[#30231F]/60 backdrop-blur-xs transition-opacity"
+            />
+
+            {/* Slide-over Sandwich Panel */}
+            <aside className="relative w-72 max-w-[85vw] bg-[#30231F] text-[#FFFCF8] flex flex-col shrink-0 z-10 shadow-2xl h-full">
+              {/* Brand Lockup & Close */}
+              <div className="p-4 border-b border-[#88766F]/30 flex items-center justify-between">
+                <div className="flex items-center gap-3 overflow-hidden">
+                  <img
+                    src={settings.logoUrl || IMAGES.logo}
+                    alt="Fazzy Nails Logo"
+                    className="w-10 h-10 rounded-full object-cover border-2 border-[#B88746] shrink-0"
+                  />
+                  <div className="flex flex-col min-w-0">
+                    <span className="font-editorial text-lg font-bold text-[#FFFCF8] truncate leading-tight">
+                      {settings.name}
+                    </span>
+                    <span className="text-[10px] uppercase tracking-widest text-[#B88746] truncate font-medium">
+                      Owner Portal
+                    </span>
+                  </div>
                 </div>
-              )}
-            </div>
 
-            <button
-              onClick={() => setSidebarOpen(!sidebarOpen)}
-              className="p-1.5 text-[#88766F] hover:text-[#FFFCF8] hover:bg-[#88766F]/20 rounded-xl transition-colors cursor-pointer hidden md:block"
-              aria-label="Toggle sidebar"
-            >
-              <Menu className="w-5 h-5" />
-            </button>
-          </div>
-
-          {/* Navigation Links */}
-          <nav className="flex-1 p-3 space-y-1.5 overflow-y-auto">
-            <button
-              onClick={() => setActiveTab('overview')}
-              className={`w-full flex items-center gap-3 px-3.5 py-3 rounded-2xl text-xs font-semibold transition-all cursor-pointer ${
-                activeTab === 'overview'
-                  ? 'bg-gradient-to-r from-[#B88746] to-[#A07032] text-[#FFFCF8] shadow-md'
-                  : 'text-[#88766F] hover:text-[#FFFCF8] hover:bg-[#88766F]/20'
-              }`}
-            >
-              <LayoutDashboard className="w-4 h-4 shrink-0" />
-              {sidebarOpen && <span>Dashboard Overview</span>}
-            </button>
-
-            <button
-              onClick={() => setActiveTab('bookings')}
-              className={`w-full flex items-center justify-between px-3.5 py-3 rounded-2xl text-xs font-semibold transition-all cursor-pointer ${
-                activeTab === 'bookings'
-                  ? 'bg-gradient-to-r from-[#B88746] to-[#A07032] text-[#FFFCF8] shadow-md'
-                  : 'text-[#88766F] hover:text-[#FFFCF8] hover:bg-[#88766F]/20'
-              }`}
-            >
-              <div className="flex items-center gap-3">
-                <Calendar className="w-4 h-4 shrink-0" />
-                {sidebarOpen && <span>Bookings</span>}
+                <button
+                  onClick={() => setMenuOpen(false)}
+                  className="p-1.5 text-[#88766F] hover:text-[#FFFCF8] hover:bg-[#88766F]/20 rounded-xl transition-colors cursor-pointer"
+                  aria-label="Close navigation menu"
+                >
+                  <X className="w-5 h-5" />
+                </button>
               </div>
-              {sidebarOpen && pendingBookings > 0 && (
-                <span className="px-2 py-0.5 bg-[#B76E79] text-[#FFFCF8] text-[10px] font-bold rounded-full">
-                  {pendingBookings}
-                </span>
-              )}
-            </button>
 
-            <button
-              onClick={() => setActiveTab('services')}
-              className={`w-full flex items-center gap-3 px-3.5 py-3 rounded-2xl text-xs font-semibold transition-all cursor-pointer ${
-                activeTab === 'services'
-                  ? 'bg-gradient-to-r from-[#B88746] to-[#A07032] text-[#FFFCF8] shadow-md'
-                  : 'text-[#88766F] hover:text-[#FFFCF8] hover:bg-[#88766F]/20'
-              }`}
-            >
-              <Scissors className="w-4 h-4 shrink-0" />
-              {sidebarOpen && <span>Services & Prices</span>}
-            </button>
+              {/* Navigation Links */}
+              <nav className="flex-1 p-3 space-y-1.5 overflow-y-auto">
+                <button
+                  onClick={() => {
+                    setActiveTab('overview');
+                    setMenuOpen(false);
+                  }}
+                  className={`w-full flex items-center gap-3 px-3.5 py-3 rounded-2xl text-xs font-semibold transition-all cursor-pointer ${
+                    activeTab === 'overview'
+                      ? 'bg-gradient-to-r from-[#B88746] to-[#A07032] text-[#FFFCF8] shadow-md'
+                      : 'text-[#88766F] hover:text-[#FFFCF8] hover:bg-[#88766F]/20'
+                  }`}
+                >
+                  <LayoutDashboard className="w-4 h-4 shrink-0" />
+                  <span>Dashboard Overview</span>
+                </button>
 
-            <button
-              onClick={() => setActiveTab('gallery')}
-              className={`w-full flex items-center gap-3 px-3.5 py-3 rounded-2xl text-xs font-semibold transition-all cursor-pointer ${
-                activeTab === 'gallery'
-                  ? 'bg-gradient-to-r from-[#B88746] to-[#A07032] text-[#FFFCF8] shadow-md'
-                  : 'text-[#88766F] hover:text-[#FFFCF8] hover:bg-[#88766F]/20'
-              }`}
-            >
-              <ImageIcon className="w-4 h-4 shrink-0" />
-              {sidebarOpen && <span>Nail Portfolio Gallery</span>}
-            </button>
+                <button
+                  onClick={() => {
+                    setActiveTab('bookings');
+                    setMenuOpen(false);
+                  }}
+                  className={`w-full flex items-center justify-between px-3.5 py-3 rounded-2xl text-xs font-semibold transition-all cursor-pointer ${
+                    activeTab === 'bookings'
+                      ? 'bg-gradient-to-r from-[#B88746] to-[#A07032] text-[#FFFCF8] shadow-md'
+                      : 'text-[#88766F] hover:text-[#FFFCF8] hover:bg-[#88766F]/20'
+                  }`}
+                >
+                  <div className="flex items-center gap-3">
+                    <Calendar className="w-4 h-4 shrink-0" />
+                    <span>Bookings</span>
+                  </div>
+                  {pendingBookings > 0 && (
+                    <span className="px-2 py-0.5 bg-[#B76E79] text-[#FFFCF8] text-[10px] font-bold rounded-full">
+                      {pendingBookings}
+                    </span>
+                  )}
+                </button>
 
-            <button
-              onClick={() => setActiveTab('customers')}
-              className={`w-full flex items-center gap-3 px-3.5 py-3 rounded-2xl text-xs font-semibold transition-all cursor-pointer ${
-                activeTab === 'customers'
-                  ? 'bg-gradient-to-r from-[#B88746] to-[#A07032] text-[#FFFCF8] shadow-md'
-                  : 'text-[#88766F] hover:text-[#FFFCF8] hover:bg-[#88766F]/20'
-              }`}
-            >
-              <Users className="w-4 h-4 shrink-0" />
-              {sidebarOpen && <span>Customer Directory</span>}
-            </button>
+                <button
+                  onClick={() => {
+                    setActiveTab('services');
+                    setMenuOpen(false);
+                  }}
+                  className={`w-full flex items-center gap-3 px-3.5 py-3 rounded-2xl text-xs font-semibold transition-all cursor-pointer ${
+                    activeTab === 'services'
+                      ? 'bg-gradient-to-r from-[#B88746] to-[#A07032] text-[#FFFCF8] shadow-md'
+                      : 'text-[#88766F] hover:text-[#FFFCF8] hover:bg-[#88766F]/20'
+                  }`}
+                >
+                  <Scissors className="w-4 h-4 shrink-0" />
+                  <span>Services & Prices</span>
+                </button>
 
-            <button
-              onClick={() => setActiveTab('invoices')}
-              className={`w-full flex items-center gap-3 px-3.5 py-3 rounded-2xl text-xs font-semibold transition-all cursor-pointer ${
-                activeTab === 'invoices'
-                  ? 'bg-gradient-to-r from-[#B88746] to-[#A07032] text-[#FFFCF8] shadow-md'
-                  : 'text-[#88766F] hover:text-[#FFFCF8] hover:bg-[#88766F]/20'
-              }`}
-            >
-              <Receipt className="w-4 h-4 shrink-0" />
-              {sidebarOpen && <span>Invoices & Revenue</span>}
-            </button>
+                <button
+                  onClick={() => {
+                    setActiveTab('gallery');
+                    setMenuOpen(false);
+                  }}
+                  className={`w-full flex items-center gap-3 px-3.5 py-3 rounded-2xl text-xs font-semibold transition-all cursor-pointer ${
+                    activeTab === 'gallery'
+                      ? 'bg-gradient-to-r from-[#B88746] to-[#A07032] text-[#FFFCF8] shadow-md'
+                      : 'text-[#88766F] hover:text-[#FFFCF8] hover:bg-[#88766F]/20'
+                  }`}
+                >
+                  <ImageIcon className="w-4 h-4 shrink-0" />
+                  <span>Nail Portfolio Gallery</span>
+                </button>
 
-            <button
-              onClick={() => setActiveTab('settings')}
-              className={`w-full flex items-center gap-3 px-3.5 py-3 rounded-2xl text-xs font-semibold transition-all cursor-pointer ${
-                activeTab === 'settings'
-                  ? 'bg-gradient-to-r from-[#B88746] to-[#A07032] text-[#FFFCF8] shadow-md'
-                  : 'text-[#88766F] hover:text-[#FFFCF8] hover:bg-[#88766F]/20'
-              }`}
-            >
-              <Settings className="w-4 h-4 shrink-0" />
-              {sidebarOpen && <span>Website & Profile Control</span>}
-            </button>
-          </nav>
+                <button
+                  onClick={() => {
+                    setActiveTab('customers');
+                    setMenuOpen(false);
+                  }}
+                  className={`w-full flex items-center gap-3 px-3.5 py-3 rounded-2xl text-xs font-semibold transition-all cursor-pointer ${
+                    activeTab === 'customers'
+                      ? 'bg-gradient-to-r from-[#B88746] to-[#A07032] text-[#FFFCF8] shadow-md'
+                      : 'text-[#88766F] hover:text-[#FFFCF8] hover:bg-[#88766F]/20'
+                  }`}
+                >
+                  <Users className="w-4 h-4 shrink-0" />
+                  <span>Customer Directory</span>
+                </button>
 
-          {/* Sidebar Footer Controls */}
-          <div className="p-3 border-t border-[#88766F]/30 space-y-2">
-            <button
-              onClick={onViewWebsite}
-              className="w-full flex items-center gap-2.5 px-3 py-2.5 bg-[#88766F]/20 hover:bg-[#B88746] text-[#FFFCF8] rounded-xl text-xs font-semibold transition-all cursor-pointer"
-            >
-              <ExternalLink className="w-4 h-4 text-[#B88746] group-hover:text-white shrink-0" />
-              {sidebarOpen && <span>View Live Website</span>}
-            </button>
+                <button
+                  onClick={() => {
+                    setActiveTab('invoices');
+                    setMenuOpen(false);
+                  }}
+                  className={`w-full flex items-center gap-3 px-3.5 py-3 rounded-2xl text-xs font-semibold transition-all cursor-pointer ${
+                    activeTab === 'invoices'
+                      ? 'bg-gradient-to-r from-[#B88746] to-[#A07032] text-[#FFFCF8] shadow-md'
+                      : 'text-[#88766F] hover:text-[#FFFCF8] hover:bg-[#88766F]/20'
+                  }`}
+                >
+                  <Receipt className="w-4 h-4 shrink-0" />
+                  <span>Invoices & Revenue</span>
+                </button>
 
-            <button
-              onClick={onLogout}
-              className="w-full flex items-center gap-2.5 px-3 py-2.5 bg-rose-950/40 hover:bg-rose-900 text-rose-200 rounded-xl text-xs font-semibold transition-all cursor-pointer"
-            >
-              <LogOut className="w-4 h-4 shrink-0" />
-              {sidebarOpen && <span>Log Out Portal</span>}
-            </button>
+                <button
+                  onClick={() => {
+                    setActiveTab('settings');
+                    setMenuOpen(false);
+                  }}
+                  className={`w-full flex items-center gap-3 px-3.5 py-3 rounded-2xl text-xs font-semibold transition-all cursor-pointer ${
+                    activeTab === 'settings'
+                      ? 'bg-gradient-to-r from-[#B88746] to-[#A07032] text-[#FFFCF8] shadow-md'
+                      : 'text-[#88766F] hover:text-[#FFFCF8] hover:bg-[#88766F]/20'
+                  }`}
+                >
+                  <Settings className="w-4 h-4 shrink-0" />
+                  <span>Website & Profile Control</span>
+                </button>
+              </nav>
+
+              {/* Drawer Footer Controls */}
+              <div className="p-3 border-t border-[#88766F]/30 space-y-2">
+                <button
+                  onClick={() => {
+                    setMenuOpen(false);
+                    onViewWebsite();
+                  }}
+                  className="w-full flex items-center gap-2.5 px-3 py-2.5 bg-[#88766F]/20 hover:bg-[#B88746] text-[#FFFCF8] rounded-xl text-xs font-semibold transition-all cursor-pointer"
+                >
+                  <ExternalLink className="w-4 h-4 text-[#B88746] shrink-0" />
+                  <span>View Live Website</span>
+                </button>
+
+                <button
+                  onClick={() => {
+                    setMenuOpen(false);
+                    onLogout();
+                  }}
+                  className="w-full flex items-center gap-2.5 px-3 py-2.5 bg-rose-950/40 hover:bg-rose-900 text-rose-200 rounded-xl text-xs font-semibold transition-all cursor-pointer"
+                >
+                  <LogOut className="w-4 h-4 shrink-0" />
+                  <span>Log Out Portal</span>
+                </button>
+              </div>
+            </aside>
           </div>
-        </aside>
+        )}
 
         {/* MAIN BODY AREA */}
         <div className="flex-1 flex flex-col overflow-hidden bg-[#F8F3EC]">
           {/* PORTAL HEADER BAR */}
-          <header className="bg-[#FFFCF8] border-b border-[#E8D8C7] px-6 py-4 flex items-center justify-between gap-4 shrink-0 shadow-2xs">
-            {/* Left: Personalized Welcome & Search */}
-            <div className="flex items-center gap-4 flex-1">
+          <header className="bg-[#FFFCF8] border-b border-[#E8D8C7] px-4 sm:px-6 py-3.5 sm:py-4 flex items-center justify-between gap-3 sm:gap-4 shrink-0 shadow-2xs">
+            {/* Left: Sandwich Menu Button, Logo & Personalized Welcome */}
+            <div className="flex items-center gap-3 flex-1 min-w-0">
               <button
-                onClick={() => setSidebarOpen(!sidebarOpen)}
-                className="p-2 text-[#30231F] hover:bg-[#F8F3EC] rounded-xl md:hidden cursor-pointer"
+                onClick={() => setMenuOpen(true)}
+                className="p-2.5 bg-[#F8F3EC] hover:bg-[#E8D8C7] text-[#30231F] rounded-xl border border-[#E8D8C7] transition-colors cursor-pointer shrink-0 relative"
+                aria-label="Open navigation menu"
               >
                 <Menu className="w-5 h-5" />
+                {pendingBookings > 0 && (
+                  <span className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-[#B76E79] rounded-full" />
+                )}
               </button>
+
+              <img
+                src={settings.logoUrl || IMAGES.logo}
+                alt="Fazzy Nails Logo"
+                className="w-9 h-9 rounded-full object-cover border-2 border-[#B88746] shrink-0 hidden sm:block"
+              />
 
               <div>
                 <h2 className="font-editorial text-xl sm:text-2xl font-bold text-[#30231F] leading-tight">
