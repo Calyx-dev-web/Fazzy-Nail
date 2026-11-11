@@ -1,7 +1,15 @@
 import React, { useState } from 'react';
-import { Shield, Lock, Mail, Eye, EyeOff, Sparkles, CheckCircle2, ArrowRight, Heart } from 'lucide-react';
+import { Lock, Mail, Eye, EyeOff, Sparkles, CheckCircle2, ArrowRight, Heart } from 'lucide-react';
+import {
+  signInWithEmailAndPassword,
+  createUserWithEmailAndPassword,
+  sendPasswordResetEmail,
+  setPersistence,
+  browserLocalPersistence,
+  browserSessionPersistence,
+} from 'firebase/auth';
+import { auth } from '../firebase';
 import { IMAGES, resolveImageUrl } from '../assets/images';
-import { getBusinessSettings, resetAdminCredentials } from '../services/db';
 
 interface AdminLoginPageProps {
   onLoginSuccess: () => void;
@@ -9,15 +17,38 @@ interface AdminLoginPageProps {
   logoUrl?: string;
 }
 
+function mapFirebaseAuthError(code: string): string {
+  switch (code) {
+    case 'auth/invalid-credential':
+    case 'auth/wrong-password':
+    case 'auth/user-not-found':
+      return 'Invalid email or password. Please check your credentials.';
+    case 'auth/email-already-in-use':
+      return 'An account with this email already exists. Please sign in instead.';
+    case 'auth/weak-password':
+      return 'Password should be at least 6 characters long.';
+    case 'auth/invalid-email':
+      return 'Please enter a valid email address.';
+    case 'auth/too-many-requests':
+      return 'Too many failed attempts. Please try again in a few minutes.';
+    case 'auth/operation-not-allowed':
+      return 'Email/Password sign-in is not enabled in Firebase Authentication settings.';
+    default:
+      return 'Authentication failed. Please check your credentials and try again.';
+  }
+}
+
 export const AdminLoginPage: React.FC<AdminLoginPageProps> = ({
   onLoginSuccess,
   onBackToSite,
   logoUrl,
 }) => {
-  const [email, setEmail] = useState('owner@fazzynails.com');
+  const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [rememberMe, setRememberMe] = useState(true);
+  const [isSignUpMode, setIsSignUpMode] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
   const [isLoading, setIsLoading] = useState(false);
 
@@ -26,7 +57,7 @@ export const AdminLoginPage: React.FC<AdminLoginPageProps> = ({
   const [recoveryEmail, setRecoveryEmail] = useState('');
   const [recoverySent, setRecoverySent] = useState(false);
 
-  const handleLogin = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setErrorMsg('');
 
@@ -35,44 +66,48 @@ export const AdminLoginPage: React.FC<AdminLoginPageProps> = ({
       return;
     }
 
+    if (isSignUpMode && password !== confirmPassword) {
+      setErrorMsg('Passwords do not match.');
+      return;
+    }
+
     setIsLoading(true);
 
     try {
-      const settings = await getBusinessSettings();
-      const expectedEmail = (settings.ownerEmail || 'owner@fazzynails.com').trim().toLowerCase();
-      const expectedPassword = settings.ownerPassword || 'admin';
+      await setPersistence(auth, rememberMe ? browserLocalPersistence : browserSessionPersistence);
 
-      if (email.trim().toLowerCase() === expectedEmail && password === expectedPassword) {
-        sessionStorage.setItem('fzn_owner_auth', 'true');
-        sessionStorage.setItem('fzn_owner_email', email.trim());
-        if (rememberMe) {
-          localStorage.setItem('fzn_owner_auth_remember', 'true');
-        }
-        setIsLoading(false);
-        onLoginSuccess();
+      if (isSignUpMode) {
+        await createUserWithEmailAndPassword(auth, email.trim(), password);
       } else {
-        setIsLoading(false);
-        setErrorMsg('Invalid owner email or password. Please check your credentials.');
+        await signInWithEmailAndPassword(auth, email.trim(), password);
       }
-    } catch {
-      // Fallback
-      if (password === 'admin') {
-        sessionStorage.setItem('fzn_owner_auth', 'true');
-        setIsLoading(false);
-        onLoginSuccess();
-      } else {
-        setIsLoading(false);
-        setErrorMsg('Invalid password.');
-      }
+
+      setIsLoading(false);
+      onLoginSuccess();
+    } catch (err: any) {
+      setIsLoading(false);
+      setErrorMsg(mapFirebaseAuthError(err?.code || ''));
     }
   };
 
   const handlePasswordRecovery = async (e: React.FormEvent) => {
     e.preventDefault();
-    await resetAdminCredentials();
-    setEmail('owner@fazzynails.com');
-    setPassword('');
-    setRecoverySent(true);
+    setErrorMsg('');
+
+    if (!recoveryEmail.trim()) {
+      setErrorMsg('Please enter your owner email address.');
+      return;
+    }
+
+    setIsLoading(true);
+    try {
+      await sendPasswordResetEmail(auth, recoveryEmail.trim());
+      setIsLoading(false);
+      setRecoverySent(true);
+    } catch (err: any) {
+      setIsLoading(false);
+      setErrorMsg(mapFirebaseAuthError(err?.code || ''));
+    }
   };
 
   return (
@@ -114,11 +149,15 @@ export const AdminLoginPage: React.FC<AdminLoginPageProps> = ({
             </div>
 
             <h1 className="font-editorial text-3xl font-bold text-[#30231F] tracking-tight">
-              {isForgotMode ? 'Reset Login Details' : 'Welcome Back'}
+              {isForgotMode
+                ? 'Password Recovery'
+                : isSignUpMode
+                ? 'Create Admin Account'
+                : 'Welcome Back'}
             </h1>
             <p className="text-xs text-[#88766F] font-medium">
               {isForgotMode
-                ? 'Reset your owner login credentials back to default'
+                ? 'Enter your owner email to receive a password reset link'
                 : 'Your beauty business, beautifully managed.'}
             </p>
           </div>
@@ -138,21 +177,18 @@ export const AdminLoginPage: React.FC<AdminLoginPageProps> = ({
                 </div>
                 <div className="space-y-2">
                   <h3 className="font-editorial text-xl font-bold text-[#30231F]">
-                    Login Details Reset
+                    Recovery Email Sent
                   </h3>
                   <p className="text-xs text-[#88766F] leading-relaxed">
-                    Your admin login has been reset to the default credentials:
+                    We sent password reset instructions to <strong>{recoveryEmail}</strong>. Check your inbox to set a new password.
                   </p>
-                  <div className="p-3 bg-[#F8F3EC] border border-[#E8D8C7] rounded-2xl text-xs font-mono text-[#30231F] space-y-1">
-                    <div>Email: <strong>owner@fazzynails.com</strong></div>
-                    <div>Password: <strong>admin</strong></div>
-                  </div>
                 </div>
                 <button
                   type="button"
                   onClick={() => {
                     setIsForgotMode(false);
                     setRecoverySent(false);
+                    setErrorMsg('');
                   }}
                   className="w-full py-3 bg-[#30231F] hover:bg-[#B88746] text-[#FFFCF8] text-xs font-semibold rounded-2xl transition-all cursor-pointer shadow-sm"
                 >
@@ -169,6 +205,7 @@ export const AdminLoginPage: React.FC<AdminLoginPageProps> = ({
                     <Mail className="w-4 h-4 text-[#88766F] absolute left-3.5 top-3.5" />
                     <input
                       type="email"
+                      required
                       placeholder="owner@fazzynails.com"
                       value={recoveryEmail}
                       onChange={(e) => setRecoveryEmail(e.target.value)}
@@ -180,23 +217,27 @@ export const AdminLoginPage: React.FC<AdminLoginPageProps> = ({
                 <div className="flex gap-3 pt-2">
                   <button
                     type="button"
-                    onClick={() => setIsForgotMode(false)}
+                    onClick={() => {
+                      setIsForgotMode(false);
+                      setErrorMsg('');
+                    }}
                     className="flex-1 py-3.5 bg-[#F8F3EC] hover:bg-[#E8D8C7] text-[#30231F] text-xs font-semibold rounded-2xl transition-colors cursor-pointer"
                   >
                     Back
                   </button>
                   <button
                     type="submit"
-                    className="flex-1 py-3.5 bg-[#B88746] hover:bg-[#30231F] text-[#FFFCF8] text-xs font-semibold rounded-2xl transition-colors cursor-pointer shadow-sm"
+                    disabled={isLoading}
+                    className="flex-1 py-3.5 bg-[#B88746] hover:bg-[#30231F] text-[#FFFCF8] text-xs font-semibold rounded-2xl transition-colors cursor-pointer shadow-sm disabled:opacity-50"
                   >
-                    Reset to Default
+                    {isLoading ? 'Sending...' : 'Send Reset Link'}
                   </button>
                 </div>
               </form>
             )
           ) : (
-            /* OWNER LOGIN FORM */
-            <form onSubmit={handleLogin} className="space-y-5">
+            /* OWNER LOGIN / SIGNUP FORM */
+            <form onSubmit={handleSubmit} className="space-y-5">
               {/* Email */}
               <div>
                 <label className="block text-xs font-semibold uppercase tracking-wider text-[#30231F] mb-2">
@@ -221,13 +262,18 @@ export const AdminLoginPage: React.FC<AdminLoginPageProps> = ({
                   <label className="text-xs font-semibold uppercase tracking-wider text-[#30231F]">
                     Password
                   </label>
-                  <button
-                    type="button"
-                    onClick={() => setIsForgotMode(true)}
-                    className="text-[11px] font-semibold text-[#B76E79] hover:text-[#B88746] transition-colors cursor-pointer"
-                  >
-                    Forgot Password?
-                  </button>
+                  {!isSignUpMode && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setIsForgotMode(true);
+                        setErrorMsg('');
+                      }}
+                      className="text-[11px] font-semibold text-[#B76E79] hover:text-[#B88746] transition-colors cursor-pointer"
+                    >
+                      Forgot Password?
+                    </button>
+                  )}
                 </div>
                 <div className="relative">
                   <Lock className="w-4 h-4 text-[#88766F] absolute left-3.5 top-3.5" />
@@ -249,6 +295,26 @@ export const AdminLoginPage: React.FC<AdminLoginPageProps> = ({
                 </div>
               </div>
 
+              {/* Confirm Password for Sign Up */}
+              {isSignUpMode && (
+                <div>
+                  <label className="block text-xs font-semibold uppercase tracking-wider text-[#30231F] mb-2">
+                    Confirm Password
+                  </label>
+                  <div className="relative">
+                    <Lock className="w-4 h-4 text-[#88766F] absolute left-3.5 top-3.5" />
+                    <input
+                      type={showPassword ? 'text' : 'password'}
+                      required
+                      placeholder="••••••••••••"
+                      value={confirmPassword}
+                      onChange={(e) => setConfirmPassword(e.target.value)}
+                      className="w-full pl-10 pr-4 py-3 bg-[#F8F3EC] border border-[#E8D8C7] rounded-2xl text-xs text-[#30231F] focus:outline-none focus:ring-2 focus:ring-[#B88746] font-mono"
+                    />
+                  </div>
+                </div>
+              )}
+
               {/* Remember Me */}
               <div className="flex items-center justify-between text-xs">
                 <label className="flex items-center gap-2 cursor-pointer text-[#88766F]">
@@ -269,14 +335,31 @@ export const AdminLoginPage: React.FC<AdminLoginPageProps> = ({
                 className="w-full py-4 bg-gradient-to-r from-[#B88746] via-[#A07032] to-[#B88746] hover:opacity-95 text-[#FFFCF8] text-xs font-bold uppercase tracking-wider rounded-2xl shadow-md transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50 mt-2"
               >
                 {isLoading ? (
-                  <span>Authenticating...</span>
+                  <span>{isSignUpMode ? 'Creating Account...' : 'Authenticating...'}</span>
                 ) : (
                   <>
-                    <span>Enter Owner Dashboard</span>
+                    <span>{isSignUpMode ? 'Create Admin Account' : 'Enter Owner Dashboard'}</span>
                     <ArrowRight className="w-4 h-4 text-[#FFFCF8]" />
                   </>
                 )}
               </button>
+
+              {/* Sign Up / Sign In Toggle */}
+              <div className="text-center pt-1">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setIsSignUpMode(!isSignUpMode);
+                    setErrorMsg('');
+                    setConfirmPassword('');
+                  }}
+                  className="text-xs font-semibold text-[#B76E79] hover:text-[#B88746] transition-colors cursor-pointer"
+                >
+                  {isSignUpMode
+                    ? 'Already have an admin account? Sign In'
+                    : 'First time here? Sign Up with Email & Password'}
+                </button>
+              </div>
             </form>
           )}
 

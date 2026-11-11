@@ -1,4 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import { onAuthStateChanged, signOut, User } from 'firebase/auth';
+import { auth } from './firebase';
 import {
   NailService,
   GalleryItem,
@@ -54,32 +56,34 @@ export default function App() {
   const [customers, setCustomers] = useState<Customer[]>([]);
   const [invoices, setInvoices] = useState<Invoice[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
+  const [firebaseUser, setFirebaseUser] = useState<User | null>(auth.currentUser);
 
-  // Check initial pathname or hash /auth for full-page admin routing
+  // Listen to Firebase Auth state and URL pathname/hash for /Admin routing
   useEffect(() => {
-    const checkRouteAndAuth = () => {
-      const isAuth =
-        sessionStorage.getItem('fzn_owner_auth') === 'true' ||
-        localStorage.getItem('fzn_owner_auth_remember') === 'true';
-
+    const syncAdminRoute = (currentUser: User | null) => {
       const pathname = window.location.pathname.toLowerCase();
       const hash = window.location.hash.toLowerCase();
+      const isAdminRoute =
+        pathname.includes('/admin') || hash === '#admin' || hash === '#/admin';
 
-      if (
-        pathname.includes('/admin') ||
-        hash === '#admin' ||
-        hash === '#/admin'
-      ) {
-        setViewMode(isAuth ? 'admin_portal' : 'admin_login');
+      if (isAdminRoute) {
+        setViewMode(currentUser ? 'admin_portal' : 'admin_login');
       }
     };
 
-    checkRouteAndAuth();
-    window.addEventListener('hashchange', checkRouteAndAuth);
-    window.addEventListener('popstate', checkRouteAndAuth);
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      setFirebaseUser(user);
+      syncAdminRoute(user);
+    });
+
+    const handleRouteChange = () => syncAdminRoute(auth.currentUser);
+    window.addEventListener('hashchange', handleRouteChange);
+    window.addEventListener('popstate', handleRouteChange);
+
     return () => {
-      window.removeEventListener('hashchange', checkRouteAndAuth);
-      window.removeEventListener('popstate', checkRouteAndAuth);
+      unsubscribe();
+      window.removeEventListener('hashchange', handleRouteChange);
+      window.removeEventListener('popstate', handleRouteChange);
     };
   }, []);
 
@@ -166,16 +170,11 @@ export default function App() {
   };
 
   const handleOpenAdmin = () => {
-    const isAuth =
-      sessionStorage.getItem('fzn_owner_auth') === 'true' ||
-      localStorage.getItem('fzn_owner_auth_remember') === 'true';
-
-    setViewMode(isAuth ? 'admin_portal' : 'admin_login');
+    setViewMode(firebaseUser || auth.currentUser ? 'admin_portal' : 'admin_login');
   };
 
-  const handleLogout = () => {
-    sessionStorage.removeItem('fzn_owner_auth');
-    localStorage.removeItem('fzn_owner_auth_remember');
+  const handleLogout = async () => {
+    await signOut(auth);
     setViewMode('public');
   };
 
