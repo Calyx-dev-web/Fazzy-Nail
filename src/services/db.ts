@@ -205,25 +205,28 @@ export async function getBusinessSettings(): Promise<BusinessSettings> {
   if (firestoreDb) {
     try {
       const snap = await getDoc(doc(firestoreDb, 'settings', 'main'));
-    if (snap.exists()) {
-      const remote = snap.data() as Partial<BusinessSettings>;
-      const merged: BusinessSettings = {
-        ...DEFAULT_BUSINESS_SETTINGS,
-        ...localSettings,
-        ...remote,
-        ownerPassword: localSettings.ownerPassword || DEFAULT_BUSINESS_SETTINGS.ownerPassword,
-      };
-      if (merged.ownerName === 'Favour Okeke') {
-        merged.ownerName = DEFAULT_BUSINESS_SETTINGS.ownerName;
+      if (snap.exists()) {
+        const remote = snap.data() as Partial<BusinessSettings>;
+        const merged: BusinessSettings = {
+          ...DEFAULT_BUSINESS_SETTINGS,
+          ...localSettings,
+          ...remote,
+          ownerPassword: localSettings.ownerPassword || DEFAULT_BUSINESS_SETTINGS.ownerPassword,
+        };
+        if (merged.ownerName === 'Favour Okeke') {
+          merged.ownerName = DEFAULT_BUSINESS_SETTINGS.ownerName;
+        }
+        try {
+          await idbPut('settings', { ...merged, id: 'main' });
+        } catch {
+          // ignore IDB mirror error
+        }
+        saveLocalStorageFallbackSingle('fzn_settings', merged);
+        return merged;
+      } else if (auth?.currentUser) {
+        const { ownerPassword: _omitted, ...publicSafeSettings } = localSettings;
+        await setDoc(doc(firestoreDb, 'settings', 'main'), stripUndefined(publicSafeSettings));
       }
-      try {
-        await idbPut('settings', { ...merged, id: 'main' });
-      } catch {
-        // ignore IDB mirror error
-      }
-      saveLocalStorageFallbackSingle('fzn_settings', merged);
-      return merged;
-    }
     } catch (error) {
       console.warn('Firestore settings read fallback:', error);
     }
@@ -278,15 +281,23 @@ export async function getBookings(): Promise<Booking[]> {
     try {
       const snap = await getDocs(collection(firestoreDb, 'bookings'));
       let items = snap.docs.map((d) => ({ ...d.data(), id: d.id } as Booking));
-      if (items.length === 0 && INITIAL_BOOKINGS.length > 0) {
-        await seedBookings(INITIAL_BOOKINGS);
-        items = INITIAL_BOOKINGS;
+      if (items.length === 0) {
+        let localItems: Booking[] = [];
+        try {
+          localItems = await idbGetAll<Booking>('bookings');
+        } catch {
+          localItems = getLocalStorageFallback<Booking>('fzn_bookings', INITIAL_BOOKINGS);
+        }
+        if (localItems.length > 0) {
+          await seedBookings(localItems);
+          items = localItems;
+        }
       }
       items.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
       saveLocalStorageFallback('fzn_bookings', items);
       return items;
     } catch (error) {
-      handleFirestoreError(error, OperationType.LIST, 'bookings');
+      console.warn('Firestore bookings read notice:', error);
     }
   }
 
@@ -374,12 +385,30 @@ export async function getInquiries(): Promise<Inquiry[]> {
   if (auth?.currentUser && firestoreDb) {
     try {
       const snap = await getDocs(collection(firestoreDb, 'inquiries'));
-      const items = snap.docs.map((d) => ({ ...d.data(), id: d.id } as Inquiry));
+      let items = snap.docs.map((d) => ({ ...d.data(), id: d.id } as Inquiry));
+      if (items.length === 0) {
+        let localItems: Inquiry[] = [];
+        try {
+          localItems = await idbGetAll<Inquiry>('inquiries');
+        } catch {
+          localItems = getLocalStorageFallback<Inquiry>('fzn_inquiries', []);
+        }
+        if (localItems.length > 0) {
+          for (const item of localItems) {
+            try {
+              await setDoc(doc(firestoreDb, 'inquiries', item.id), stripUndefined({ ...item }));
+            } catch {
+              // ignore
+            }
+          }
+          items = localItems;
+        }
+      }
       items.sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
       saveLocalStorageFallback('fzn_inquiries', items);
       return items;
     } catch (error) {
-      handleFirestoreError(error, OperationType.LIST, 'inquiries');
+      console.warn('Firestore inquiries read notice:', error);
     }
   }
 
@@ -639,14 +668,22 @@ export async function getCustomers(): Promise<Customer[]> {
     try {
       const snap = await getDocs(collection(firestoreDb, 'customers'));
       let items = snap.docs.map((d) => ({ ...d.data(), id: d.id } as Customer));
-      if (items.length === 0 && INITIAL_CUSTOMERS.length > 0) {
-        await seedCustomers(INITIAL_CUSTOMERS);
-        items = INITIAL_CUSTOMERS;
+      if (items.length === 0) {
+        let localItems: Customer[] = [];
+        try {
+          localItems = await idbGetAll<Customer>('customers');
+        } catch {
+          localItems = getLocalStorageFallback<Customer>('fzn_customers', INITIAL_CUSTOMERS);
+        }
+        if (localItems.length > 0) {
+          await seedCustomers(localItems);
+          items = localItems;
+        }
       }
       saveLocalStorageFallback('fzn_customers', items);
       return items;
     } catch (error) {
-      handleFirestoreError(error, OperationType.LIST, 'customers');
+      console.warn('Firestore customers read notice:', error);
     }
   }
 
@@ -719,14 +756,22 @@ export async function getInvoices(): Promise<Invoice[]> {
     try {
       const snap = await getDocs(collection(firestoreDb, 'invoices'));
       let items = snap.docs.map((d) => ({ ...d.data(), id: d.id } as Invoice));
-      if (items.length === 0 && INITIAL_INVOICES.length > 0) {
-        await seedInvoices(INITIAL_INVOICES);
-        items = INITIAL_INVOICES;
+      if (items.length === 0) {
+        let localItems: Invoice[] = [];
+        try {
+          localItems = await idbGetAll<Invoice>('invoices');
+        } catch {
+          localItems = getLocalStorageFallback<Invoice>('fzn_invoices', INITIAL_INVOICES);
+        }
+        if (localItems.length > 0) {
+          await seedInvoices(localItems);
+          items = localItems;
+        }
       }
       saveLocalStorageFallback('fzn_invoices', items);
       return items;
     } catch (error) {
-      handleFirestoreError(error, OperationType.LIST, 'invoices');
+      console.warn('Firestore invoices read notice:', error);
     }
   }
 

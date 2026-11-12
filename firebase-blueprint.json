@@ -19,6 +19,7 @@
         "hours": { "type": "string", "maxLength": 200 },
         "logoUrl": { "type": "string", "maxLength": 500000 },
         "profileImage": { "type": "string", "maxLength": 500000 },
+        "aboutImage": { "type": "string", "maxLength": 500000 },
         "heroTitle": { "type": "string", "maxLength": 200 },
         "heroSubtitle": { "type": "string", "maxLength": 600 },
         "announcement": { "type": "string", "maxLength": 300 }
