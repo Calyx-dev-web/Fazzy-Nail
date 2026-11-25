@@ -2,6 +2,7 @@ import React from 'react';
 import { Calendar, Phone, MapPin, Star, Clock, CheckCircle2, MessageSquare } from 'lucide-react';
 import { BUSINESS_INFO, getWhatsAppUrl } from '../types';
 import { IMAGES } from '../assets/images';
+import { ScrollReveal } from './ScrollReveal';
 
 interface HeroSectionProps {
   onOpenBooking: () => void;
@@ -18,7 +19,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({ onOpenBooking, onSelec
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-8 items-center">
           {/* Left Column: Editorial Value Proposition */}
-          <div className="lg:col-span-7 space-y-6">
+          <ScrollReveal className="lg:col-span-7 space-y-6" y={18}>
             {/* Classy kicker */}
             <div className="inline-flex items-center gap-2 px-3 py-1 bg-rose-50 border border-rose-200/60 rounded-full text-xs font-medium text-rose-900">
               <MapPin className="w-3.5 h-3.5 text-rose-600" />
@@ -119,10 +120,10 @@ export const HeroSection: React.FC<HeroSectionProps> = ({ onOpenBooking, onSelec
                 <span>Same-Day Appointments</span>
               </div>
             </div>
-          </div>
+          </ScrollReveal>
 
           {/* Right Column: Hero Visual Asset */}
-          <div className="lg:col-span-5 relative max-w-full overflow-hidden">
+          <ScrollReveal className="lg:col-span-5 relative max-w-full overflow-hidden" delay={0.14} y={24}>
             <div className="relative mx-auto max-w-md lg:max-w-none">
               {/* Outer decorative ring */}
               <div className="relative rounded-3xl overflow-hidden border border-stone-200/90 shadow-2xl bg-white aspect-[4/3] lg:aspect-[5/6]">
@@ -163,7 +164,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({ onOpenBooking, onSelec
                 </div>
               </div>
             </div>
-          </div>
+          </ScrollReveal>
         </div>
       </div>
     </section>

@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { NailService, getWhatsAppUrl } from '../types';
 import { formatPrice } from '../utils/format';
 import { Clock, Star, MessageSquare, ArrowRight } from 'lucide-react';
+import { ScrollReveal } from './ScrollReveal';
 
 interface ServicesSectionProps {
   services: NailService[];
@@ -40,7 +41,7 @@ export const ServicesSection: React.FC<ServicesSectionProps> = ({
     <section id="services" className="py-16 sm:py-24 bg-white border-b border-stone-200">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Section Header */}
-        <div className="max-w-2xl mx-auto text-center space-y-3 mb-12">
+        <ScrollReveal className="max-w-2xl mx-auto text-center space-y-3 mb-12">
           <span className="text-xs uppercase font-semibold tracking-widest text-rose-700">
             Artistry & Care
           </span>
@@ -67,13 +68,14 @@ export const ServicesSection: React.FC<ServicesSectionProps> = ({
               </button>
             ))}
           </div>
-        </div>
+        </ScrollReveal>
 
         {/* Services Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filteredServices.map((service) => (
-            <div
+          {filteredServices.map((service, idx) => (
+            <ScrollReveal
               key={service.id}
+              delay={Math.min(idx * 0.06, 0.3)}
               className="group p-6 rounded-2xl bg-[#FAF8F5] border border-stone-200/90 hover:border-rose-300 transition-all hover:shadow-md flex flex-col justify-between"
             >
               <div>
@@ -131,12 +133,12 @@ export const ServicesSection: React.FC<ServicesSectionProps> = ({
                   <ArrowRight className="w-3.5 h-3.5 text-stone-300" />
                 </button>
               </div>
-            </div>
+            </ScrollReveal>
           ))}
         </div>
 
         {/* Custom consultation notice */}
-        <div className="mt-12 p-6 rounded-2xl bg-stone-50 border border-stone-200 flex flex-col sm:flex-row items-center justify-between gap-4 text-center sm:text-left">
+        <ScrollReveal delay={0.1} className="mt-12 p-6 rounded-2xl bg-stone-50 border border-stone-200 flex flex-col sm:flex-row items-center justify-between gap-4 text-center sm:text-left">
           <div>
             <h4 className="font-editorial text-lg font-semibold text-stone-900">
               Have a custom Pinterest nail photo or bridal request?
@@ -154,7 +156,7 @@ export const ServicesSection: React.FC<ServicesSectionProps> = ({
             <MessageSquare className="w-4 h-4" />
             <span>Send Inspiration Image</span>
           </a>
-        </div>
+        </ScrollReveal>
       </div>
     </section>
   );

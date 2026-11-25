@@ -2,6 +2,7 @@ import React from 'react';
 import { getWhatsAppUrl } from '../types';
 import { IMAGES, resolveImageUrl } from '../assets/images';
 import { Sparkles, ShieldCheck, Heart, Award, MessageSquare } from 'lucide-react';
+import { ScrollReveal } from './ScrollReveal';
 
 interface AboutSectionProps {
   aboutImage?: string;
@@ -13,7 +14,7 @@ export const AboutSection: React.FC<AboutSectionProps> = ({ aboutImage }) => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
           {/* Studio Image Column */}
-          <div className="lg:col-span-5 order-2 lg:order-1">
+          <ScrollReveal className="lg:col-span-5 order-2 lg:order-1" delay={0.12} y={24}>
             <div className="relative rounded-3xl overflow-hidden border border-stone-200 shadow-xl bg-white aspect-[4/3] sm:aspect-square">
               <img
                 src={resolveImageUrl(aboutImage || IMAGES.studio)}
@@ -32,10 +33,10 @@ export const AboutSection: React.FC<AboutSectionProps> = ({ aboutImage }) => {
                 </p>
               </div>
             </div>
-          </div>
+          </ScrollReveal>
 
           {/* About Text Column */}
-          <div className="lg:col-span-7 order-1 lg:order-2 space-y-6">
+          <ScrollReveal className="lg:col-span-7 order-1 lg:order-2 space-y-6" y={18}>
             <div className="inline-flex items-center gap-2 px-3 py-1 bg-rose-50 border border-rose-200/60 rounded-full text-xs font-semibold text-rose-900">
               <Heart className="w-3.5 h-3.5 text-rose-600" />
               <span>About Fazzynails</span>
@@ -107,7 +108,7 @@ export const AboutSection: React.FC<AboutSectionProps> = ({ aboutImage }) => {
                 <span>Talk to the Nail Artist on WhatsApp</span>
               </a>
             </div>
-          </div>
+          </ScrollReveal>
         </div>
       </div>
     </section>

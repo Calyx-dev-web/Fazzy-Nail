@@ -3,6 +3,7 @@ import { BlogPost, getWhatsAppUrl } from '../types';
 import { INITIAL_BLOG_POSTS } from '../data/initialData';
 import { Clock, ArrowRight, X, Sparkles, MessageSquare } from 'lucide-react';
 import { resolveImageUrl } from '../assets/images';
+import { ScrollReveal } from './ScrollReveal';
 
 export const BlogSection: React.FC = () => {
   const [selectedPost, setSelectedPost] = useState<BlogPost | null>(null);
@@ -10,7 +11,7 @@ export const BlogSection: React.FC = () => {
   return (
     <section id="blog" className="py-16 sm:py-24 bg-[#FAF8F5] border-b border-stone-200">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="max-w-2xl mx-auto text-center space-y-3 mb-12">
+        <ScrollReveal className="max-w-2xl mx-auto text-center space-y-3 mb-12">
           <span className="text-xs uppercase font-semibold tracking-widest text-rose-700">
             Nail Care Knowledge
           </span>
@@ -20,11 +21,11 @@ export const BlogSection: React.FC = () => {
           <p className="text-stone-600 text-sm sm:text-base">
             Professional aftercare routines, nail anatomy insights, and the latest luxury salon trends.
           </p>
-        </div>
+        </ScrollReveal>
 
         {/* Blog Posts Grid */}
         {INITIAL_BLOG_POSTS.length === 0 ? (
-          <div className="max-w-lg mx-auto py-12 px-6 text-center rounded-3xl bg-white border border-stone-200 shadow-xs space-y-3">
+          <ScrollReveal delay={0.08} className="max-w-lg mx-auto py-12 px-6 text-center rounded-3xl bg-white border border-stone-200 shadow-xs space-y-3">
             <Sparkles className="w-8 h-8 text-rose-400 mx-auto" />
             <h3 className="font-editorial text-2xl font-medium text-stone-900">
               New Journal Entries Coming Soon
@@ -43,12 +44,13 @@ export const BlogSection: React.FC = () => {
                 <span>Ask Our Nail Tech on WhatsApp</span>
               </a>
             </div>
-          </div>
+          </ScrollReveal>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {INITIAL_BLOG_POSTS.map((post) => (
-              <article
+            {INITIAL_BLOG_POSTS.map((post, idx) => (
+              <ScrollReveal
                 key={post.id}
+                delay={Math.min(idx * 0.08, 0.25)}
                 className="bg-white rounded-3xl overflow-hidden border border-stone-200 shadow-xs hover:shadow-lg transition-all duration-300 flex flex-col justify-between group"
               >
                 <div>
@@ -98,7 +100,7 @@ export const BlogSection: React.FC = () => {
 
                   <span className="text-[11px] text-stone-400 font-mono">{post.date}</span>
                 </div>
-              </article>
+              </ScrollReveal>
             ))}
           </div>
         )}

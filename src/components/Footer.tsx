@@ -2,6 +2,7 @@ import React from 'react';
 import { BUSINESS_INFO, getWhatsAppUrl } from '../types';
 import { IMAGES, resolveImageUrl } from '../assets/images';
 import { Phone, MessageSquare, MapPin, Clock, Shield, ArrowUp, ExternalLink } from 'lucide-react';
+import { ScrollReveal } from './ScrollReveal';
 
 interface FooterProps {
   onOpenBooking: () => void;
@@ -17,7 +18,7 @@ export const Footer: React.FC<FooterProps> = ({ onOpenBooking, onOpenAdmin, onNa
 
   return (
     <footer className="bg-stone-900 text-stone-300 pt-16 pb-24 sm:pb-16 border-t border-stone-800">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <ScrollReveal className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8" y={16}>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-10 pb-12 border-b border-stone-800">
           {/* Col 1: Brand & Motto */}
           <div className="lg:col-span-4 space-y-4">
@@ -194,7 +195,7 @@ export const Footer: React.FC<FooterProps> = ({ onOpenBooking, onOpenAdmin, onNa
             </button>
           </div>
         </div>
-      </div>
+      </ScrollReveal>
     </footer>
   );
 };

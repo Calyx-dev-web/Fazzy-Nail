@@ -2,6 +2,7 @@ import React from 'react';
 import { NailService, getWhatsAppUrl } from '../types';
 import { formatPrice } from '../utils/format';
 import { Check, MessageSquare, Calendar, Award } from 'lucide-react';
+import { ScrollReveal } from './ScrollReveal';
 
 interface PricingSectionProps {
   services: NailService[];
@@ -20,7 +21,7 @@ export const PricingSection: React.FC<PricingSectionProps> = ({
   return (
     <section id="pricing" className="py-16 sm:py-24 bg-[#FAF8F5] border-b border-stone-200">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="max-w-2xl mx-auto text-center space-y-3 mb-12">
+        <ScrollReveal className="max-w-2xl mx-auto text-center space-y-3 mb-12">
           <span className="text-xs uppercase font-semibold tracking-widest text-rose-700">
             Transparent Pricing
           </span>
@@ -30,13 +31,14 @@ export const PricingSection: React.FC<PricingSectionProps> = ({
           <p className="text-stone-600 text-sm sm:text-base">
             No hidden charges. No rushed jobs. High-grade professional monomers, non-toxic prep, and true salon mastery.
           </p>
-        </div>
+        </ScrollReveal>
 
         {/* Featured Top Tier Deals */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-12 max-w-4xl mx-auto">
-          {popularServices.map((service) => (
-            <div
+          {popularServices.map((service, idx) => (
+            <ScrollReveal
               key={service.id}
+              delay={idx * 0.08}
               className="relative p-8 rounded-3xl bg-white border-2 border-stone-900 shadow-xl flex flex-col justify-between"
             >
               <div className="absolute -top-3.5 right-6 px-3 py-1 bg-stone-900 text-stone-100 text-[10px] uppercase font-bold tracking-widest rounded-full flex items-center gap-1">
@@ -100,12 +102,12 @@ export const PricingSection: React.FC<PricingSectionProps> = ({
                   <MessageSquare className="w-4 h-4 text-emerald-600" />
                 </a>
               </div>
-            </div>
+            </ScrollReveal>
           ))}
         </div>
 
         {/* Full Price Table List */}
-        <div className="max-w-4xl mx-auto bg-white rounded-2xl border border-stone-200 overflow-hidden shadow-xs">
+        <ScrollReveal delay={0.1} className="max-w-4xl mx-auto bg-white rounded-2xl border border-stone-200 overflow-hidden shadow-xs">
           <div className="p-5 bg-stone-50 border-b border-stone-200 flex items-center justify-between">
             <h3 className="font-editorial text-lg font-semibold text-stone-900">
               Complete Treatment & Add-On Rate Card
@@ -156,10 +158,10 @@ export const PricingSection: React.FC<PricingSectionProps> = ({
               </div>
             ))}
           </div>
-        </div>
+        </ScrollReveal>
 
         {/* Emergency slot banner */}
-        <div className="mt-8 max-w-4xl mx-auto p-4 rounded-xl bg-rose-50/80 border border-rose-200/80 flex flex-col sm:flex-row items-center justify-between gap-4 text-center sm:text-left">
+        <ScrollReveal delay={0.14} className="mt-8 max-w-4xl mx-auto p-4 rounded-xl bg-rose-50/80 border border-rose-200/80 flex flex-col sm:flex-row items-center justify-between gap-4 text-center sm:text-left">
           <div className="space-y-0.5">
             <span className="text-xs font-bold text-rose-950 uppercase tracking-wider">
               Emergency & Last-Minute Walk-In Slots
@@ -177,7 +179,7 @@ export const PricingSection: React.FC<PricingSectionProps> = ({
             <MessageSquare className="w-3.5 h-3.5 text-emerald-400" />
             <span>Emergency WhatsApp</span>
           </a>
-        </div>
+        </ScrollReveal>
       </div>
     </section>
   );

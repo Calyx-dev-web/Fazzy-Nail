@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { BUSINESS_INFO, getWhatsAppUrl, Inquiry } from '../types';
 import { addInquiry } from '../services/db';
 import { Phone, MessageSquare, Clock, MapPin, Send, CheckCircle2, AlertCircle, ExternalLink } from 'lucide-react';
+import { ScrollReveal } from './ScrollReveal';
 
 interface ContactSectionProps {
   onInquirySubmitted?: (inquiry: Inquiry) => void;
@@ -57,7 +58,7 @@ export const ContactSection: React.FC<ContactSectionProps> = ({ onInquirySubmitt
   return (
     <section id="contact" className="py-16 sm:py-24 bg-white border-b border-stone-200">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="max-w-2xl mx-auto text-center space-y-3 mb-12">
+        <ScrollReveal className="max-w-2xl mx-auto text-center space-y-3 mb-12">
           <span className="text-xs uppercase font-semibold tracking-widest text-rose-700">
             Get In Touch
           </span>
@@ -67,12 +68,12 @@ export const ContactSection: React.FC<ContactSectionProps> = ({ onInquirySubmitt
           <p className="text-stone-600 text-sm sm:text-base">
             Reach out for bookings, custom bridal nail inquiries, press-on orders, or emergency rush appointments.
           </p>
-        </div>
+        </ScrollReveal>
 
         {/* 3 Contact Action Cards */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
           {/* Phone Call Card */}
-          <div className="p-6 rounded-3xl bg-[#FAF8F5] border border-stone-200/90 flex flex-col justify-between space-y-4">
+          <ScrollReveal delay={0.04} className="p-6 rounded-3xl bg-[#FAF8F5] border border-stone-200/90 flex flex-col justify-between space-y-4">
             <div className="space-y-2">
               <div className="w-10 h-10 rounded-xl bg-stone-900 text-white flex items-center justify-center">
                 <Phone className="w-5 h-5 text-rose-300" />
@@ -93,10 +94,10 @@ export const ContactSection: React.FC<ContactSectionProps> = ({ onInquirySubmitt
               <Phone className="w-3.5 h-3.5" />
               <span>Call +234 907 281 7540</span>
             </a>
-          </div>
+          </ScrollReveal>
 
           {/* WhatsApp Direct Chat Card */}
-          <div className="p-6 rounded-3xl bg-emerald-50/60 border border-emerald-200 flex flex-col justify-between space-y-4">
+          <ScrollReveal delay={0.1} className="p-6 rounded-3xl bg-emerald-50/60 border border-emerald-200 flex flex-col justify-between space-y-4">
             <div className="space-y-2">
               <div className="w-10 h-10 rounded-xl bg-emerald-600 text-white flex items-center justify-center">
                 <MessageSquare className="w-5 h-5" />
@@ -119,10 +120,10 @@ export const ContactSection: React.FC<ContactSectionProps> = ({ onInquirySubmitt
               <MessageSquare className="w-3.5 h-3.5" />
               <span>Open WhatsApp Chat</span>
             </a>
-          </div>
+          </ScrollReveal>
 
           {/* Emergency & Hours Card */}
-          <div className="p-6 rounded-3xl bg-rose-50/70 border border-rose-200 flex flex-col justify-between space-y-4">
+          <ScrollReveal delay={0.16} className="p-6 rounded-3xl bg-rose-50/70 border border-rose-200 flex flex-col justify-between space-y-4">
             <div className="space-y-2">
               <div className="w-10 h-10 rounded-xl bg-rose-900 text-white flex items-center justify-center">
                 <Clock className="w-5 h-5 text-rose-300" />
@@ -146,13 +147,13 @@ export const ContactSection: React.FC<ContactSectionProps> = ({ onInquirySubmitt
               <MessageSquare className="w-3.5 h-3.5 text-emerald-400" />
               <span>Emergency Contact WhatsApp</span>
             </a>
-          </div>
+          </ScrollReveal>
         </div>
 
         {/* Main Grid: Form + Google Map */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
           {/* Contact Form Column */}
-          <div className="lg:col-span-6 p-6 sm:p-8 rounded-3xl bg-[#FAF8F5] border border-stone-200/90 shadow-sm">
+          <ScrollReveal delay={0.08} className="lg:col-span-6 p-6 sm:p-8 rounded-3xl bg-[#FAF8F5] border border-stone-200/90 shadow-sm">
             <div className="mb-6 space-y-1">
               <h3 className="font-editorial text-2xl font-bold text-stone-900">
                 Send an Online Inquiry
@@ -279,10 +280,10 @@ export const ContactSection: React.FC<ContactSectionProps> = ({ onInquirySubmitt
                 </button>
               </form>
             )}
-          </div>
+          </ScrollReveal>
 
           {/* Google Map & Studio Location Column */}
-          <div className="lg:col-span-6 space-y-4">
+          <ScrollReveal delay={0.16} className="lg:col-span-6 space-y-4">
             <div className="p-6 rounded-3xl bg-[#FAF8F5] border border-stone-200/90 space-y-4">
               <div className="flex items-start justify-between gap-4">
                 <div className="space-y-1">
@@ -342,7 +343,7 @@ export const ContactSection: React.FC<ContactSectionProps> = ({ onInquirySubmitt
                 </a>
               </div>
             </div>
-          </div>
+          </ScrollReveal>
         </div>
       </div>
     </section>

@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { GalleryItem, getWhatsAppUrl } from '../types';
 import { Sparkles, X, MessageSquare, Calendar, ZoomIn } from 'lucide-react';
 import { resolveImageUrl } from '../assets/images';
+import { ScrollReveal } from './ScrollReveal';
 
 interface GallerySectionProps {
   galleryItems: GalleryItem[];
@@ -28,7 +29,7 @@ export const GallerySection: React.FC<GallerySectionProps> = ({ galleryItems, on
   return (
     <section id="gallery" className="py-16 sm:py-24 bg-white border-b border-stone-200">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="max-w-2xl mx-auto text-center space-y-3 mb-12">
+        <ScrollReveal className="max-w-2xl mx-auto text-center space-y-3 mb-12">
           <span className="text-xs uppercase font-semibold tracking-widest text-rose-700">
             Portfolio of Masterpieces
           </span>
@@ -55,13 +56,14 @@ export const GallerySection: React.FC<GallerySectionProps> = ({ galleryItems, on
               </button>
             ))}
           </div>
-        </div>
+        </ScrollReveal>
 
         {/* Gallery Grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-          {filteredItems.map((item) => (
-            <div
+          {filteredItems.map((item, idx) => (
+            <ScrollReveal
               key={item.id}
+              delay={Math.min(idx * 0.05, 0.3)}
               className="group relative rounded-2xl overflow-hidden bg-stone-100 border border-stone-200/90 shadow-xs hover:shadow-xl transition-all duration-300 flex flex-col"
             >
               <div
@@ -122,7 +124,7 @@ export const GallerySection: React.FC<GallerySectionProps> = ({ galleryItems, on
                   </a>
                 </div>
               </div>
-            </div>
+            </ScrollReveal>
           ))}
         </div>
 

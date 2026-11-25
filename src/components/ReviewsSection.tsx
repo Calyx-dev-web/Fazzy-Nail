@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Review, getWhatsAppUrl } from '../types';
 import { Star, CheckCircle, MessageSquare, Plus, X } from 'lucide-react';
 import { addReview } from '../services/db';
+import { ScrollReveal } from './ScrollReveal';
 
 interface ReviewsSectionProps {
   reviews: Review[];
@@ -52,7 +53,7 @@ export const ReviewsSection: React.FC<ReviewsSectionProps> = ({ reviews, onRevie
   return (
     <section id="reviews" className="py-16 sm:py-24 bg-white border-b border-stone-200">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-6 mb-12">
+        <ScrollReveal className="flex flex-col sm:flex-row sm:items-end justify-between gap-6 mb-12">
           <div className="space-y-3">
             <span className="text-xs uppercase font-semibold tracking-widest text-rose-700">
               Client Testimonials
@@ -84,11 +85,11 @@ export const ReviewsSection: React.FC<ReviewsSectionProps> = ({ reviews, onRevie
               <span>Share on WhatsApp</span>
             </a>
           </div>
-        </div>
+        </ScrollReveal>
 
         {/* Reviews Grid */}
         {reviews.length === 0 ? (
-          <div className="max-w-lg mx-auto py-12 px-6 text-center rounded-3xl bg-[#FAF8F5] border border-stone-200/80 space-y-3">
+          <ScrollReveal delay={0.08} className="max-w-lg mx-auto py-12 px-6 text-center rounded-3xl bg-[#FAF8F5] border border-stone-200/80 space-y-3">
             <div className="flex justify-center text-amber-400 gap-1">
               {[...Array(5)].map((_, i) => (
                 <Star key={i} className="w-5 h-5 fill-amber-400 text-amber-400" />
@@ -109,12 +110,13 @@ export const ReviewsSection: React.FC<ReviewsSectionProps> = ({ reviews, onRevie
                 <span>Write a Review</span>
               </button>
             </div>
-          </div>
+          </ScrollReveal>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            {reviews.map((rev) => (
-              <div
+            {reviews.map((rev, idx) => (
+              <ScrollReveal
                 key={rev.id}
+                delay={Math.min(idx * 0.06, 0.3)}
                 className="p-6 rounded-2xl bg-[#FAF8F5] border border-stone-200/80 flex flex-col justify-between shadow-xs hover:shadow-md transition-shadow"
               >
                 <div className="space-y-3">
@@ -149,7 +151,7 @@ export const ReviewsSection: React.FC<ReviewsSectionProps> = ({ reviews, onRevie
                     </span>
                   )}
                 </div>
-              </div>
+              </ScrollReveal>
             ))}
           </div>
         )}
