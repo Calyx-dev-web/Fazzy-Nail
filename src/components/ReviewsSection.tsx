@@ -87,47 +87,72 @@ export const ReviewsSection: React.FC<ReviewsSectionProps> = ({ reviews, onRevie
         </div>
 
         {/* Reviews Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          {reviews.map((rev) => (
-            <div
-              key={rev.id}
-              className="p-6 rounded-2xl bg-[#FAF8F5] border border-stone-200/80 flex flex-col justify-between shadow-xs hover:shadow-md transition-shadow"
-            >
-              <div className="space-y-3">
-                <div className="flex items-center justify-between">
-                  <div className="flex text-amber-500">
-                    {[...Array(rev.rating)].map((_, i) => (
-                      <Star key={i} className="w-3.5 h-3.5 fill-amber-400 text-amber-400" />
-                    ))}
-                  </div>
-                  <span className="text-[11px] text-stone-400 font-mono">{rev.date}</span>
-                </div>
-
-                <p className="text-stone-700 text-xs sm:text-sm leading-relaxed italic">
-                  "{rev.comment}"
-                </p>
-              </div>
-
-              <div className="pt-4 mt-4 border-t border-stone-200/60 flex items-center justify-between">
-                <div>
-                  <span className="font-semibold text-xs text-stone-900 block">
-                    {rev.name}
-                  </span>
-                  <span className="text-[11px] text-stone-500 block">
-                    {rev.service}
-                  </span>
-                </div>
-
-                {rev.verified && (
-                  <span className="inline-flex items-center gap-1 text-[10px] text-emerald-700 font-medium">
-                    <CheckCircle className="w-3 h-3" />
-                    <span>Verified</span>
-                  </span>
-                )}
-              </div>
+        {reviews.length === 0 ? (
+          <div className="max-w-lg mx-auto py-12 px-6 text-center rounded-3xl bg-[#FAF8F5] border border-stone-200/80 space-y-3">
+            <div className="flex justify-center text-amber-400 gap-1">
+              {[...Array(5)].map((_, i) => (
+                <Star key={i} className="w-5 h-5 fill-amber-400 text-amber-400" />
+              ))}
             </div>
-          ))}
-        </div>
+            <h3 className="font-editorial text-2xl font-medium text-stone-900">
+              Be the First to Share Your Review
+            </h3>
+            <p className="text-xs sm:text-sm text-stone-600 leading-relaxed">
+              Visited Fazzynails recently? Let other clients know about your manicure, sculpting quality, and studio experience.
+            </p>
+            <div className="pt-2">
+              <button
+                onClick={() => setModalOpen(true)}
+                className="inline-flex items-center gap-2 px-5 py-2.5 bg-stone-900 hover:bg-stone-800 text-white text-xs font-semibold rounded-xl transition-colors cursor-pointer shadow-xs"
+              >
+                <Plus className="w-3.5 h-3.5 text-rose-300" />
+                <span>Write a Review</span>
+              </button>
+            </div>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            {reviews.map((rev) => (
+              <div
+                key={rev.id}
+                className="p-6 rounded-2xl bg-[#FAF8F5] border border-stone-200/80 flex flex-col justify-between shadow-xs hover:shadow-md transition-shadow"
+              >
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between">
+                    <div className="flex text-amber-500">
+                      {[...Array(rev.rating)].map((_, i) => (
+                        <Star key={i} className="w-3.5 h-3.5 fill-amber-400 text-amber-400" />
+                      ))}
+                    </div>
+                    <span className="text-[11px] text-stone-400 font-mono">{rev.date}</span>
+                  </div>
+
+                  <p className="text-stone-700 text-xs sm:text-sm leading-relaxed italic">
+                    "{rev.comment}"
+                  </p>
+                </div>
+
+                <div className="pt-4 mt-4 border-t border-stone-200/60 flex items-center justify-between">
+                  <div>
+                    <span className="font-semibold text-xs text-stone-900 block">
+                      {rev.name}
+                    </span>
+                    <span className="text-[11px] text-stone-500 block">
+                      {rev.service}
+                    </span>
+                  </div>
+
+                  {rev.verified && (
+                    <span className="inline-flex items-center gap-1 text-[10px] text-emerald-700 font-medium">
+                      <CheckCircle className="w-3 h-3" />
+                      <span>Verified</span>
+                    </span>
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
 
       {/* Leave Review Modal */}

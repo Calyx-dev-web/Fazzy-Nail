@@ -7,7 +7,7 @@ interface NavbarProps {
   onOpenBooking: () => void;
   onOpenAdmin: () => void;
   currentPage: string;
-  setCurrentPage: (page: string) => void;
+  onNavigate: (page: string) => void;
   pendingBookingsCount?: number;
   logoUrl?: string;
 }
@@ -16,7 +16,7 @@ export const Navbar: React.FC<NavbarProps> = ({
   onOpenBooking,
   onOpenAdmin,
   currentPage,
-  setCurrentPage,
+  onNavigate,
   pendingBookingsCount = 0,
   logoUrl,
 }) => {
@@ -34,12 +34,8 @@ export const Navbar: React.FC<NavbarProps> = ({
   ];
 
   const handleNavClick = (id: string) => {
-    setCurrentPage(id);
     setMobileMenuOpen(false);
-    const element = document.getElementById(id);
-    if (element) {
-      element.scrollIntoView({ behavior: 'smooth' });
-    }
+    onNavigate(id);
   };
 
   return (
